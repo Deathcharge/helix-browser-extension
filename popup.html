@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samsara Helix</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🌀</span>
+        <span class="logo-text">Samsara Helix</span>
+      </div>
+      <div class="header-actions">
+        <div id="subscription-badge" class="subscription-badge hidden"></div>
+        <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Auth Status Bar -->
+    <div id="auth-status" class="auth-status">
+      <span id="auth-text">Not signed in</span>
+      <button id="auth-btn" class="auth-btn">Sign In</button>
+    </div>
+
+    <!-- Usage Counter -->
+    <div id="usage-bar" class="usage-bar hidden">
+      <div class="usage-info">
+        <span id="usage-text">0/5 analyses today</span>
+        <button id="upgrade-btn" class="upgrade-link hidden">Upgrade</button>
+      </div>
+      <div class="usage-progress">
+        <div id="usage-fill" class="usage-fill"></div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="content">
+      <!-- Current Page Info -->
+      <div class="page-info">
+        <div id="page-title" class="page-title">Loading...</div>
+        <div id="page-url" class="page-url"></div>
+      </div>
+
+      <!-- Analyze Button -->
+      <button id="analyze-btn" class="analyze-btn">
+        <span class="btn-icon">🔍</span>
+        <span class="btn-text">Analyze Page</span>
+      </button>
+
+      <!-- Results Section (hidden by default) -->
+      <div id="results" class="results hidden">
+        <div class="metrics-grid">
+          <div class="metric">
+            <div class="metric-label">Relevance</div>
+            <div id="relevance-score" class="metric-value">--</div>
+            <div class="metric-bar">
+              <div id="relevance-bar" class="metric-fill"></div>
+            </div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Harmony</div>
+            <div id="harmony-score" class="metric-value">--</div>
+            <div class="metric-bar">
+              <div id="harmony-bar" class="metric-fill"></div>
+            </div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Discovery</div>
+            <div id="discovery-score" class="metric-value">--</div>
+            <div class="metric-bar">
+              <div id="discovery-bar" class="metric-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Preview -->
+        <div id="content-preview" class="content-preview"></div>
+
+        <!-- Keywords Found -->
+        <div id="keywords" class="keywords"></div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button id="export-btn" class="action-btn">📄 Export</button>
+          <button id="share-btn" class="action-btn">🔗 Share</button>
+          <button id="save-btn" class="action-btn">💾 Save</button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <div class="loading-text">Analyzing page...</div>
+      </div>
+
+      <!-- Error State -->
+      <div id="error" class="error hidden">
+        <div class="error-icon">⚠️</div>
+        <div id="error-message" class="error-message"></div>
+        <button id="retry-btn" class="retry-btn">Try Again</button>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <a href="https://helixspiral.work" target="_blank" class="footer-link">
+        Powered by Helix Collective
+      </a>
+    </footer>
+  </div>
+
+  <!-- Settings Panel (hidden by default) -->
+  <div id="settings-panel" class="settings-panel hidden">
+    <div class="settings-header">
+      <span>Settings</span>
+      <button id="close-settings" class="icon-btn">✕</button>
+    </div>
+    <div class="settings-content">
+      <!-- Account Section -->
+      <div class="settings-section">
+        <h3>Account</h3>
+        <div id="account-info" class="account-info">
+          <p id="account-email">Not signed in</p>
+          <p id="account-tier" class="tier-badge">Free</p>
+        </div>
+        <button id="settings-auth-btn" class="settings-btn">Sign In</button>
+        <button id="settings-logout-btn" class="settings-btn hidden">Sign Out</button>
+        <a href="https://helixspiral.work/marketplace/pricing" target="_blank" class="upgrade-banner hidden" id="upgrade-banner">
+          ⭐ Upgrade for more features
+        </a>
+      </div>
+
+      <!-- Usage Section -->
+      <div class="settings-section">
+        <h3>Usage Today</h3>
+        <div class="usage-details">
+          <div class="usage-row">
+            <span>Analyses:</span>
+            <span id="settings-usage-count">0/5</span>
+          </div>
+          <div class="usage-row">
+            <span>History:</span>
+            <span id="settings-history-limit">7 days</span>
+          </div>
+          <div class="usage-row">
+            <span>Export:</span>
+            <span id="settings-export-status">❌</span>
+          </div>
+          <div class="usage-row">
+            <span>Advanced Metrics:</span>
+            <span id="settings-metrics-status">❌</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- General Settings -->
+      <div class="settings-section">
+        <h3>General</h3>
+        <label class="setting">
+          <span>API Endpoint</span>
+          <select id="api-endpoint">
+            <option value="https://helix-unified-production.up.railway.app">Production</option>
+            <option value="http://localhost:8000">Local Dev</option>
+          </select>
+        </label>
+        <label class="setting">
+          <span>Analysis Depth</span>
+          <input type="range" id="coordination-level" min="0" max="10" step="0.5" value="5">
+          <span id="coordination-value">5.0</span>
+        </label>
+        <label class="setting checkbox">
+          <input type="checkbox" id="auto-analyze" checked>
+          <span>Auto-analyze on icon click</span>
+        </label>
+        <label class="setting checkbox">
+          <input type="checkbox" id="show-widget" checked>
+          <span>Show floating widget on pages</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal (hidden by default) -->
+  <div id="auth-modal" class="auth-modal hidden">
+    <div class="auth-content">
+      <h2>Sign In to Helix</h2>
+      <p>Access your subscription and sync across devices</p>
+      <form id="auth-form">
+        <input type="email" id="auth-email" placeholder="Email" required>
+        <input type="password" id="auth-password" placeholder="Password" required>
+        <button type="submit" class="auth-submit">Sign In</button>
+      </form>
+      <div class="auth-links">
+        <a href="https://helixspiral.work/auth/signup" target="_blank">Create account</a>
+        <a href="https://helixspiral.work/auth/forgot-password" target="_blank">Forgot password?</a>
+      </div>
+      <button id="close-auth" class="auth-close">✕</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

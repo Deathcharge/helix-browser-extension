@@ -1,8 +1,8 @@
-# Helix Browser Extension
+# Samsara Helix Browser Extension
 
 **AI-powered browser extension for intelligent web assistance and autonomous task execution**
 
-Helix Browser Extension brings the power of the Helix Collective directly to your browser. Get AI assistance while browsing, automate repetitive tasks, and coordinate with the broader Helix ecosystem—all from your browser.
+Samsara Helix Browser Extension brings the power of the Samsara Helix ecosystem directly to your browser. Get AI assistance while browsing, automate repetitive tasks, and coordinate with the broader Helix ecosystem—all from your browser.
 
 ## 🌐 Features
 
@@ -25,7 +25,7 @@ Helix Browser Extension brings the power of the Helix Collective directly to you
 - **Status Monitoring** - Real-time status updates
 
 ### Integration
-- **Helix Ecosystem** - Connect to routine-engine, agents, UCF metrics
+- **Samsara Helix Ecosystem** - Connect to Spirals, Narrative Engine, agents
 - **Custom APIs** - Integrate with your own services
 - **Webhook Support** - Send data to external systems
 - **OAuth Integration** - Secure authentication
@@ -54,7 +54,7 @@ Once published, install directly from the Chrome Web Store.
 
 ### Basic Usage
 
-1. Click the Helix extension icon in your browser toolbar
+1. Click the Samsara Helix extension icon in your browser toolbar
 2. Type your question or request
 3. Get AI-powered responses based on the current page context
 4. Use suggestions or modify the response
@@ -73,7 +73,7 @@ Once published, install directly from the Chrome Web Store.
 
 ```
 helix-browser-extension/
-├── manifest.json          # Extension configuration
+├── manifest.json          # Extension configuration (Manifest V3)
 ├── background.js          # Service worker (background tasks)
 ├── content.js            # Content script (page interaction)
 ├── content.css           # Content styling
@@ -82,14 +82,15 @@ helix-browser-extension/
 ├── popup.css             # Popup styling
 ├── icons/                # Extension icons
 │   ├── icon16.png
+│   ├── icon32.png
 │   ├── icon48.png
-│   ├── icon128.png
-│   └── icon256.png
+│   └── icon128.png
 ├── src/                  # Additional source files
-│   ├── api.js           # API communication
-│   ├── storage.js       # Local storage management
-│   ├── utils.js         # Utility functions
-│   └── config.js        # Configuration
+│   ├── background/       # Background service worker modules
+│   │   ├── offlineQueue.js
+│   │   └── stateManager.js
+│   └── content/          # Content script modules
+│       └── errorBoundary.js
 ├── README.md
 ├── LICENSE
 └── LICENSING.md
@@ -121,26 +122,37 @@ helix-browser-extension/
 - Status display
 
 ### Supporting Modules
-- **api.js** - API communication with Helix services
-- **storage.js** - Local storage and caching
-- **utils.js** - Helper functions
-- **config.js** - Configuration management
+- **offlineQueue.js** - Queue requests when offline
+- **stateManager.js** - Manage extension state
+- **errorBoundary.js** - Error handling for content scripts
 
-## 🔗 Integration with Helix Ecosystem
+## 🔗 Integration with Samsara Helix Ecosystem
 
-### With Routine Engine
+### With Spirals (Workflow Automation)
 ```javascript
 // Execute workflows from browser
 chrome.runtime.sendMessage({
-  type: 'execute_workflow',
-  workflow: 'process_page_data',
+  type: 'execute_spiral',
+  spiral: 'process_page_data',
   data: pageData
 }, response => {
   console.log('Workflow result:', response);
 });
 ```
 
-### With Agent Swarm
+### With Narrative Engine
+```javascript
+// Generate content based on page context
+chrome.runtime.sendMessage({
+  type: 'generate_narrative',
+  prompt: 'Summarize this page',
+  context: pageContext
+}, response => {
+  displayResult(response);
+});
+```
+
+### With Orchestration Hub
 ```javascript
 // Coordinate agents for complex tasks
 chrome.runtime.sendMessage({
@@ -149,18 +161,6 @@ chrome.runtime.sendMessage({
   context: pageContext
 }, response => {
   displayResult(response);
-});
-```
-
-### With UCF Protocol
-```javascript
-// Track consciousness metrics
-chrome.runtime.sendMessage({
-  type: 'track_metrics',
-  action: 'page_analysis',
-  duration: analysisTime
-}, response => {
-  console.log('Metrics tracked:', response);
 });
 ```
 
@@ -175,7 +175,7 @@ chrome.runtime.sendMessage({
 
 ## 📊 Statistics
 
-- **Total Files**: 15
+- **Total Files**: 20+
 - **Size**: 136KB
 - **Languages**: JavaScript, HTML, CSS
 - **Manifest Version**: 3
@@ -268,34 +268,33 @@ See [LICENSING.md](./LICENSING.md) for details.
 
 - **Issues**: Report bugs on GitHub
 - **Discussions**: Community discussions on GitHub
-- **Commercial**: licensing@helixcollective.io
+- **Commercial**: licensing@samsarahelix.com
 
 ## 🎓 Learn More
 
-- [Helix Orchestration Hub](https://github.com/Deathcharge/helix-orchestration)
-- [Routine Engine](https://github.com/Deathcharge/routine-engine)
-- [Agent Swarm](https://github.com/Deathcharge/helix-agent-swarm)
-- [UCF Protocol](https://github.com/Deathcharge/ucf-protocol)
-- [Helix Core](https://github.com/Deathcharge/helix-core)
-- [VS Code Extension](https://github.com/Deathcharge/helix-vscode-extension)
-- [Web OS](https://github.com/Deathcharge/helix-web-os)
+- [Helix Orchestration](https://github.com/Deathcharge/helix-orchestration)
+- [Helix Ethics](https://github.com/Deathcharge/helix-ethics)
+- [Helix Spirals](https://github.com/Deathcharge/helix-spirals)
+- [Helix Narrative Engine](https://github.com/Deathcharge/helix-narrative-engine)
+- [Helix Creative Spirals](https://github.com/Deathcharge/helix-creative-spirals)
+- [Helix VSCode Extension](https://github.com/Deathcharge/helix-vscode-extension)
 
 ## 🌟 Ecosystem Overview
 
-Helix Browser Extension is part of the comprehensive Helix Collective ecosystem:
+Samsara Helix Browser Extension is part of the comprehensive Samsara Helix ecosystem:
 
 | Component | Purpose | Status |
 |-----------|---------|--------|
-| **Routine Engine** | Workflow automation | ✅ Published |
-| **UCF Protocol** | Consciousness metrics | ✅ Published |
-| **Agent Swarm** | Multi-agent coordination | ✅ Published |
-| **Helix Core** | LLM reasoning foundation | ✅ Published |
-| **VS Code Extension** | Developer tools | ✅ Published |
-| **Web OS** | Browser-based platform | ✅ Published |
-| **Browser Extension** | Browser assistance | ✅ Published |
+| **Helix Orchestration** | Multi-agent coordination | ✅ Published |
+| **Helix Ethics** | Ethical AI governance | ✅ Published |
+| **Helix Spirals** | Workflow automation | ✅ Published |
+| **Helix Narrative Engine** | Creative content generation | ✅ Published |
+| **Helix Creative Spirals** | Social media automation | ✅ Published |
+| **Helix VSCode Extension** | Developer tools | ✅ Published |
+| **Helix Browser Extension** | Browser assistance | ✅ Ready |
 
 ---
 
-**Built with ❤️ as part of the Helix Collective**
+**Built with ❤️ as part of the Samsara Helix Collective**
 
 *Tat Tvam Asi 🕉️ - Thou Art That*
