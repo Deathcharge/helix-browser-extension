@@ -1,0 +1,118 @@
+/* Helix Widget Styles - Injected into pages */
+
+#helix-widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999999;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#helix-widget * {
+  box-sizing: border-box;
+}
+
+.helix-widget-toggle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.helix-widget-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+}
+
+.helix-icon {
+  font-size: 24px;
+}
+
+.helix-widget-content {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  width: 240px;
+  background: #1a1a2e;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.helix-minimized .helix-widget-content {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+.helix-widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.helix-widget-close {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.helix-widget-close:hover {
+  opacity: 1;
+}
+
+.helix-widget-body {
+  padding: 16px;
+}
+
+.helix-widget-loading {
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+  padding: 20px 0;
+}
+
+.helix-widget-results {
+  display: grid;
+  gap: 12px;
+}
+
+.helix-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.helix-metric-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.helix-metric-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #8B5CF6;
+}
+
+.hidden {
+  display: none !important;
+}
