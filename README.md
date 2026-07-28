@@ -1,93 +1,68 @@
-# helix-browser-extension
+# Helix Page Lens
 
-Browser extension for Helix
+Helix Page Lens is a local-first Chrome extension that turns the active webpage into a compact reading and structure brief. It is for researchers, writers, and curious readers who want fast orientation without uploading page content or creating an account.
 
-## 🎯 Overview
+The extension reports estimated reading time, word count, frequent terms, and three transparent heuristic signals:
 
-This repository is part of the [Helix Collective](https://github.com/Deathcharge/helix-platform), a comprehensive ecosystem for building intelligent, multi-agent systems with consciousness frameworks and advanced LLM integration.
+- **Readability** uses a Flesch-style estimate based on sentence and syllable length.
+- **Structure** reflects the presence of headings and paragraphs.
+- **Evidence** reflects links and citation-like markup. It does **not** verify truth or source quality.
 
-## 🚀 Quick Start
+Status: credible local-first MVP, ready for unpacked-extension evaluation. Chrome Web Store publication is not yet complete.
 
-### Installation
+## Install and try it
 
-\`\`\`bash
-git clone https://github.com/Deathcharge/helix-browser-extension.git
-cd helix-browser-extension
-pip install -r requirements.txt
-\`\`\`
+Prerequisites: Chrome or Chromium with Manifest V3 support. Node.js 20+ is only needed for development.
 
-### Basic Usage
+1. Clone or download this repository.
+2. Open `chrome://extensions`.
+3. Enable **Developer mode**.
+4. Choose **Load unpacked** and select `helix_browser_extension/helix-browser-extension`.
+5. Open a normal HTTP or HTTPS article, select the extension icon, and choose **Analyze this page**.
 
-See the [examples/](examples/) directory for working examples and integration patterns.
+Chrome blocks extensions from reading internal pages such as `chrome://extensions` and the Chrome Web Store. The popup explains this when encountered.
 
-## 📚 Documentation
+Results can be copied, exported as JSON, or saved locally. Saved analyses are deduplicated by URL, capped at 25, and removable from the popup.
 
-- **[Architecture](docs/ARCHITECTURE.md)** - System design and components
-- **[API Reference](docs/API.md)** - Complete API documentation
-- **[Integration Guide](docs/INTEGRATION.md)** - How to integrate with other Helix repos
-- **[Deployment](docs/DEPLOYMENT.md)** - Production deployment guide
-- **[Contributing](CONTRIBUTING.md)** - How to contribute
+## Privacy and permissions
 
-## 🔗 Related Repositories
+Analysis runs entirely in the extension. There are no network requests, accounts, analytics, or remote dependencies.
 
-- **[helix-platform](https://github.com/Deathcharge/helix-platform)** - Central hub and integration guide
-- **[helix-unified](https://github.com/Deathcharge/helix-unified)** - Main unified codebase
-- **[helix-core](https://github.com/Deathcharge/helix-core)** - Core utilities and LLM integration
+- `activeTab`: grants temporary access only to the tab where the user invokes the extension.
+- `scripting`: extracts visible text and structural counts after the user chooses **Analyze**.
+- `storage`: stores up to 25 user-requested analysis records on the device.
 
-See [HELIX_REPOSITORY_INDEX.md](https://github.com/Deathcharge/helix-platform/blob/main/HELIX_REPOSITORY_INDEX.md) for the complete ecosystem map.
+The extension removes scripts, styles, navigation, footers, forms, hidden elements, and dialogs from its temporary page clone before reading text. It processes at most 250,000 characters and saves only a 280-character excerpt. Passwords and form values are not read.
 
-## 🧪 Testing
+## Development
 
-Run tests with pytest:
+```bash
+npm ci
+npm run lint
+npm test
+npm run build
+npm run check
+```
 
-\`\`\`bash
-pytest tests/ -v --cov=src
-\`\`\`
+`npm run build` creates a clean unpacked artifact in `dist/helix-page-lens`. No dependency installation is currently required beyond Node itself, but `npm ci` validates the lockfile and keeps CI reproducible.
 
-## 🔄 CI/CD
+### Architecture
 
-This repository uses GitHub Actions for:
-- ✅ Automated testing (Python 3.9, 3.10, 3.11)
-- ✅ Code linting (flake8)
-- ✅ Type checking (mypy)
-- ✅ Security scanning (bandit, safety)
-- ✅ Coverage reporting (Codecov)
+- `manifest.json` declares the minimal browser surface.
+- `popup.js` owns the user journey, active-tab extraction, local history, copy, and export.
+- `analyzer.js` is a side-effect-free analysis module shared by the popup and Node tests.
+- `test/` checks the scoring contract, edge cases, and permission boundary.
 
-See [.github/workflows/ci.yml](.github/workflows/ci.yml) for details.
+The analysis is deliberately heuristic and deterministic. It must not be presented as an AI judgment, accessibility audit, fact check, or substitute for editorial review.
 
-## 📋 Requirements
+## Packaging and release
 
-- Python 3.9+
-- Dependencies listed in requirements.txt
-- Development dependencies in requirements-dev.txt
+Run `npm run check`, then load `dist/helix-page-lens` as an unpacked extension for smoke testing. Store submission requires owner-controlled listing copy, screenshots, privacy disclosures, developer registration, and package signing. See [docs/PRODUCTIZATION.md](docs/PRODUCTIZATION.md) for acceptance criteria and gates.
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- Development setup
-- Code style guide
-- Testing requirements
-- Pull request process
+See [CONTRIBUTING.md](CONTRIBUTING.md). Keep permissions minimal, preserve local-only behavior, and accompany scoring changes with tests and an explanation of the user-facing methodology.
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/Deathcharge/helix-browser-extension/issues)
-- **Discussions**: Ask questions in [GitHub Discussions](https://github.com/Deathcharge/helix-browser-extension/discussions)
-- **Documentation**: See the [docs/](docs/) directory
-- **Ecosystem**: Visit [helix-platform](https://github.com/Deathcharge/helix-platform)
-
-## 🎓 Learn More
-
-- [Helix Collective Repository Index](https://github.com/Deathcharge/helix-platform/blob/main/HELIX_REPOSITORY_INDEX.md)
-- [Architecture Guide](https://github.com/Deathcharge/helix-platform/blob/main/docs/ARCHITECTURE.md)
-- [Integration Examples](https://github.com/Deathcharge/helix-platform/tree/main/examples)
-
----
-
-**Status**: ✅ Production Ready  
-**Last Updated**: June 19, 2026  
-**Maintainer**: Helix Collective Contributors
+The repository currently contains a Business Source License 1.1 text with project-specific parameters that do not clearly name this extension. License applicability and store-distribution rights require owner/legal confirmation; no license change was inferred during productization. See [LICENSE](LICENSE).
