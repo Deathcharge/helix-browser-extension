@@ -30,3 +30,6 @@ venv.bak/
 *.swo
 *~
 .DS_Store
+node_modules/
+coverage/
+output/

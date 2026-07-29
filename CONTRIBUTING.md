@@ -1,48 +1,30 @@
-# Contributing to Helix Browser Extension
+# Contributing to Samsarix Page Lens
 
-We welcome contributions! Here's how to get started.
+Thanks for improving the extension. Changes should preserve its local-first, explicit-user-action model.
 
-## Getting Started
-
-1. Fork the repository
-2. Clone your fork
-3. Create a branch: `git checkout -b feature/your-feature`
-4. Make changes and commit: `git commit -am 'Add feature'`
-5. Push to branch: `git push origin feature/your-feature`
-6. Submit a pull request
-
-## Development Setup
+## Setup
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/helix-browser-extension.git
 cd helix-browser-extension
-pip install -e ".[dev]"
-pip install -r requirements-test.txt
+npm ci
+npm run check
 ```
 
-## Running Tests
+Load `helix_browser_extension/helix-browser-extension` from `chrome://extensions` for development, or run `npm run build` and smoke-test `dist/samsarix-page-lens` as the release artifact.
 
-```bash
-pytest tests/ -v
-pytest tests/ --cov
-```
+## Standards
 
-## Coding Standards
+- Do not add a permission without documenting its user benefit, privacy impact, and narrower alternatives.
+- Keep analysis deterministic and explain score changes in both tests and user-facing methodology.
+- Treat page content as untrusted; use text APIs instead of HTML injection and bound work by size.
+- Add focused `node:test` coverage for behavior changes.
+- Run `npm run lint`, `npm test`, and `npm run build` before opening a pull request.
+- Update the README and `docs/PRODUCTIZATION.md` when behavior, limitations, or release gates change.
+- Keep `SPDX-License-Identifier: MPL-2.0` and Samsarix LLC copyright notices on source files.
 
-- Follow PEP 8
-- Use type hints
-- Write comprehensive docstrings
-- Minimum 80% test coverage
-- Keep lines under 100 characters
+## Pull requests
 
-## Pull Request Process
+Describe the user problem, implementation, verification performed, permission/privacy impact, and any work left for the owner. Follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-1. Ensure all tests pass
-2. Add tests for new functionality
-3. Update documentation
-4. Provide clear description
-5. Wait for review
-
-## Code of Conduct
-
-Please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+By contributing, you agree to license your contribution under MPL-2.0. Questions can be sent to [contact@samsarix.com](mailto:contact@samsarix.com).
