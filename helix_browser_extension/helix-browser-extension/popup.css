@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MPL-2.0 */
+/* Copyright 2026 Samsarix LLC */
 :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #0d1020; color: #f4f1ff; }
 * { box-sizing: border-box; }
 body { width: 390px; min-height: 400px; margin: 0; background: radial-gradient(circle at top right, #272051, #0d1020 52%); }
@@ -5,6 +7,7 @@ button { font: inherit; }
 .popup-container { min-height: 400px; }
 .header, .footer { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid #2d3150; }
 .footer { border: 0; border-top: 1px solid #2d3150; color: #aaaec8; font-size: 12px; }
+.footer a { color: #b4a5ff; text-decoration: none; }
 .logo { display: flex; gap: 8px; align-items: center; font-weight: 750; letter-spacing: -.01em; }
 .local-badge { padding: 4px 7px; border: 1px solid #4a8b72; border-radius: 99px; color: #8ce2bd; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .content { padding: 18px; }
@@ -37,5 +40,12 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .action-btn { padding: 8px 4px; border: 1px solid #404566; border-radius: 7px; background: #1b1e37; color: #e4e2f2; cursor: pointer; font-size: 11px; }
 .action-btn:hover { background: #252944; }
+.history-section { margin-top: 18px; }
+.history-section h2 { margin: 0 0 8px; color: #c9c6dd; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.history-list { display: grid; gap: 6px; }
+.history-item { display: grid; gap: 3px; width: 100%; padding: 9px 10px; overflow: hidden; border: 1px solid #303454; border-radius: 8px; background: #171a31; color: #f4f1ff; cursor: pointer; text-align: left; }
+.history-item strong, .history-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-item strong { font-size: 11px; }
+.history-item span { color: #989db9; font-size: 10px; }
 .link-btn { border: 0; background: none; color: #b4a5ff; cursor: pointer; font-size: 12px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

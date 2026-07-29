@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright 2026 Samsarix LLC
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { analyzePage, topKeywords } = require('../helix_browser_extension/helix-browser-extension/analyzer.js');

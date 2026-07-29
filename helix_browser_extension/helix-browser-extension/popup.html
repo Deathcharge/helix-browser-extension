@@ -1,15 +1,17 @@
 <!doctype html>
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- Copyright 2026 Samsarix LLC -->
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Helix Page Lens</title>
+    <title>Samsarix Page Lens</title>
     <link rel="stylesheet" href="popup.css">
   </head>
   <body>
     <main class="popup-container">
       <header class="header">
-        <div class="logo"><span aria-hidden="true">🌀</span><span>Helix Page Lens</span></div>
+        <div class="logo"><span aria-hidden="true">🌀</span><span>Samsarix Page Lens</span></div>
         <span class="local-badge">On-device</span>
       </header>
 
@@ -48,9 +50,14 @@
             <button id="save-btn" class="action-btn" type="button">Save locally</button>
           </div>
         </section>
+
+        <section id="history-section" class="history-section hidden" aria-labelledby="history-heading">
+          <h2 id="history-heading">Recent saved analyses</h2>
+          <div id="history-list" class="history-list"></div>
+        </section>
       </section>
 
-      <footer class="footer"><span id="history-count">No saved analyses</span><button id="clear-history-btn" class="link-btn hidden" type="button">Clear</button></footer>
+      <footer class="footer"><span id="history-count">No saved analyses</span><span><a href="mailto:support@samsarix.com">Support</a><button id="clear-history-btn" class="link-btn hidden" type="button">Clear</button></span></footer>
     </main>
     <script src="analyzer.js"></script>
     <script src="popup.js"></script>

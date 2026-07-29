@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright 2026 Samsarix LLC
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else root.HelixAnalyzer = api;
+  else root.SamsarixAnalyzer = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const STOP_WORDS = new Set('a an and are as at be by for from has have he her hers him his i in is it its of on or our she that the their them they this to was we were will with you your'.split(' '));
 

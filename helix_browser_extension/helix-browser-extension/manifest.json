@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Helix Page Lens",
-  "version": "1.0.0",
+  "name": "Samsarix Page Lens",
+  "version": "1.1.0",
   "description": "Inspect a page's reading effort, structure, and evidence signals locally in your browser.",
+  "homepage_url": "https://samsarix.com",
   "permissions": ["activeTab", "scripting", "storage"],
   "action": {
     "default_popup": "popup.html",

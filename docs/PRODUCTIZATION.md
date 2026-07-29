@@ -4,7 +4,7 @@ Last updated: 2026-07-28
 
 ## Product definition
 
-Helix Page Lens is a local-first Manifest V3 Chrome extension for researchers, writers, and readers who want a quick, private orientation to the page in front of them. Its primary journey is: open an HTTP(S) page, invoke the extension, explicitly analyze it, understand the result, then copy, export, or save it locally.
+Samsarix Page Lens is a local-first Manifest V3 Chrome extension from Samsarix LLC for researchers, writers, and readers who want a quick, private orientation to the page in front of them. Its primary journey is: open an HTTP(S) page, invoke the extension, explicitly analyze it, understand the result, then copy, export, or save it locally.
 
 This narrow utility is independently useful and does not reproduce or require `helix-unified`. It intentionally excludes accounts, subscriptions, cloud sync, remote AI, telemetry, content scripts that run on every page, and claims of factual verification. Distribution starts as a reproducible unpacked extension; Chrome Web Store distribution is an owner-controlled follow-up.
 
@@ -23,12 +23,12 @@ Baseline captured on Windows 11 with Node 24.12.0, npm 11.6.2, and Python 3.11.9
 
 ## Decisions and assumptions
 
-- Preserve the familiar popup interaction and Helix identity while making the functionality honest and standalone.
+- Preserve the familiar popup interaction while adopting the current Samsarix identity and making the functionality honest and standalone.
 - Use transparent deterministic heuristics. “Evidence” counts link and citation markup; it is explicitly not truth verification.
 - Request `activeTab`, `scripting`, and `storage` only. Analysis begins on an explicit button press.
 - Keep up to 25 records, deduplicate by URL, store only a short excerpt, and expose a destructive-action confirmation.
 - Cap extracted text at 250,000 characters to bound CPU and memory.
-- Treat the current license text as an owner/legal issue: it identifies “Helix Licensing System,” contains commercial-use terms, and conflicts with earlier MIT metadata. No legal interpretation or license change was made.
+- License source under unmodified MPL-2.0 with Samsarix LLC copyright and notice metadata. This file-level copyleft protects distributed modifications to covered files without imposing project-wide strong copyleft on integrations. Brand and trademark rights remain separate.
 
 ## Findings and implementation checklist
 
@@ -47,18 +47,18 @@ Baseline captured on Windows 11 with Node 24.12.0, npm 11.6.2, and Python 3.11.9
 - [x] Bound extraction and retention; avoid forms and hidden content.
 - [x] Add keyboard focus visibility, live regions, semantic controls, and reduced-motion behavior.
 - [ ] Complete hands-on Chrome smoke testing across long articles, SPAs, PDFs, iframes, and non-English pages.
-- [ ] Resolve the license scope and store-distribution rights with the owner/legal counsel.
+- [x] Replace the mis-scoped custom BSL with a standard license chosen by the owner: MPL-2.0.
 
 ### P2
 
-- [ ] Add a dedicated history/details screen if validation shows users need to revisit more than a count.
+- [x] Make the five most recent saved analyses directly reopenable from the popup.
 - [ ] Add locale-aware tokenization and language-specific readability models.
 - [ ] Add a user-visible methodology drawer with per-score inputs.
 - [ ] Add Firefox support only after testing API differences and distribution demand.
 
 ## Completed work
 
-- Rebuilt the extension as Helix Page Lens with on-device analysis and no server dependency.
+- Rebuilt the extension as Samsarix Page Lens with on-device analysis and no server dependency.
 - Added meaningful readability, structure, evidence, reading-time, keyword, and count output.
 - Added copy, JSON export, capped/deduplicated local save, clear confirmation, and recovery states.
 - Reduced the permission surface and removed unreachable legacy implementations and mock-only Python tests.
@@ -71,7 +71,7 @@ Baseline captured on Windows 11 with Node 24.12.0, npm 11.6.2, and Python 3.11.9
 - [x] No private service, credentials, environment variables, remote network request, or broad host permission is required.
 - [x] Static checks, unit tests, manifest policy test, and artifact build are automated.
 - [ ] Manual Chrome tests pass on at least three representative public pages plus a protected page and low-content page.
-- [ ] Owner confirms the license terms apply to this extension and permit the chosen distribution.
+- [x] Owner identified Samsarix LLC as the rights holder and authorized the Samsarix rebrand and license update.
 - [ ] Owner supplies and approves store listing, screenshots, privacy disclosures, developer account, and signing/submission.
 
 ## Final verification results
@@ -81,14 +81,31 @@ Executed on 2026-07-28:
 - `npm ci`: exited successfully with the committed dependency-free lockfile.
 - `npm run lint`: passed; manifest policy and syntax checks reported `Manifest and JavaScript checks passed.`
 - `npm test`: passed 5/5 Node tests with 0 failures, skips, or cancellations.
-- `npm run build`: exited successfully and produced `dist/helix-page-lens` with the declared six runtime assets, icons, and `BUILD_INFO.json` for version 1.0.0.
+- `npm run build`: the first pass produced `dist/helix-page-lens` for version 1.0.0. The Samsarix 1.1.0 verification results are recorded below after the second pass.
 - `npm run check`: exited successfully as the combined lint/test/build gate. Individual commands were also run to capture their full output.
 - `git diff --check`: passed with no whitespace errors.
 - `npm audit --omit=dev`: exited successfully; the project has no installed runtime or development dependencies.
 - Artifact inspection confirmed only `BUILD_INFO.json`, `analyzer.js`, icons, the manifest, and popup HTML/CSS/JS were packaged.
 - A targeted source scan found no shipped network calls, credential identifiers, broad host permissions, or always-on content script declarations; the only matching terms were negative assertions/documentation.
 
-A Playwright Chromium smoke attempt was not countable: the installed Playwright package had no matching managed Chromium binary. A fallback attempt against locally installed Chrome did not return a trustworthy assertion result in the command runner. No browser download was added and no manual Chrome UI result is claimed. Hands-on Chrome verification therefore remains a release gate.
+A first-pass Playwright Chromium smoke attempt was not countable because the installed Playwright package had no matching managed Chromium binary. Second-pass browser results are recorded below.
+
+## Samsarix 1.1.0 pass
+
+- Updated product identity, copyright, support, and contact details to Samsarix Page Lens / Samsarix LLC.
+- Replaced the inaccurate custom BSL with unmodified MPL-2.0, added SPDX headers and `NOTICE`, and included license/source notices in the release artifact.
+- Added reopenable recent history, delayed export-URL cleanup, a complete privacy disclosure, and a store-listing packet.
+- Reviewed nearby repositories for portfolio context. They confirm a broader Samsarix/Helix ecosystem exists, but this extension remains deliberately standalone and has no runtime dependency on those repositories.
+- Final command and browser outcomes are appended after verification rather than assumed here.
+
+Verification completed for 1.1.0 on Windows 11:
+
+- `npm ci`: passed; audited one package record with zero vulnerabilities.
+- `npm run check`: passed the manifest/privacy policy check, six Node tests, and artifact build.
+- Browser smoke test using a Playwright persistent Chromium profile and `--load-extension`: passed. Chromium loaded `dist/samsarix-page-lens`, rendered the packaged popup, executed the packaged analyzer on a representative fixture, displayed the results, saved to real `chrome.storage.local`, rendered reopenable recent history, and captured a screenshot at `output/playwright/samsarix-page-lens-popup.png`.
+- The installed-extension smoke does not emulate the browser-toolbar gesture that grants `activeTab`; one manual toolbar analysis on a normal public article remains required before store submission.
+- The local `LICENSE` was byte-normalized and compared with the SPDX license-list MPL-2.0 text; it matched.
+- `git diff --check` and final artifact/security scans are run again immediately before commit.
 
 ## Risks, security, reliability, privacy, and cost
 
@@ -102,6 +119,6 @@ The simplest path is a free Chrome Web Store utility with no account. Sustainabi
 
 ## Owner- or externally blocked work
 
-1. **License:** owner/legal counsel must confirm the intended licensed work, licensor identity/contact, change date, commercial thresholds, and whether store distribution is permitted. Verify by recording the decision and updating `LICENSE` plus README wording.
-2. **Chrome Web Store:** owner must provide developer registration, listing assets/copy, privacy disclosure, region choices, signing, and submission. Verify with an installed store build matching the locally tested manifest version.
-3. **Manual browser matrix:** a human must verify visual layout and browser-specific injection behavior in supported Chrome versions before store release.
+1. **Legal review (recommended, not a code blocker):** counsel should confirm Samsarix LLC’s chain of title, contributor treatment, and any trademark strategy. MPL-2.0 is now applied consistently, but licensing cannot establish ownership of third-party contributions or register a brand.
+2. **Chrome Web Store:** owner must provide developer registration, listing assets, hosted privacy URL, region choices, signing, and submission. Verify with an installed store build matching the locally tested manifest version.
+3. **Manual browser matrix:** a human must verify visual layout and browser-specific injection behavior in supported Chrome versions before store release unless automated installed-extension coverage is completed below.

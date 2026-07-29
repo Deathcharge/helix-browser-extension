@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright 2026 Samsarix LLC
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const manifest = require('../helix_browser_extension/helix-browser-extension/manifest.json');
@@ -7,4 +9,9 @@ test('ships a minimal Manifest V3 permission set', () => {
   assert.equal(manifest.host_permissions, undefined);
   assert.equal(manifest.content_scripts, undefined);
   assert.equal(manifest.background, undefined);
+});
+test('ships Samsarix release metadata', () => {
+  assert.equal(manifest.name, 'Samsarix Page Lens');
+  assert.equal(manifest.version, '1.1.0');
+  assert.equal(manifest.homepage_url, 'https://samsarix.com');
 });

@@ -1,8 +1,10 @@
 {
-  "name": "helix-page-lens",
-  "version": "1.0.0",
+  "name": "samsarix-page-lens",
+  "version": "1.1.0",
   "private": true,
   "description": "Local-first Chrome page analysis extension",
+  "license": "MPL-2.0",
+  "author": "Samsarix LLC <contact@samsarix.com>",
   "scripts": {
     "check": "npm run lint && npm test && npm run build",
     "lint": "node scripts/check.mjs",
