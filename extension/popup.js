@@ -3,6 +3,7 @@
 const $ = id => document.getElementById(id);
 let currentTab = null; let currentResult = null;
 let savedHistory = []; let comparisonCandidates = []; let currentComparison = null;
+const decisionLabels = { 'read-deeper': 'Read deeper', reference: 'Reference', skip: 'Skip' };
 
 function show(name) { ['loading', 'error', 'results'].forEach(id => $(id).classList.toggle('hidden', id !== name)); }
 function setScore(name, value) { $(`${name}-score`).textContent = `${value}/100`; $(`${name}-bar`).style.width = `${value}%`; }
@@ -10,6 +11,21 @@ function formatDate(value) { return value ? new Date(value).toLocaleDateString()
 function tag(text, className = '') { const element = document.createElement('span'); element.textContent = text; if (className) element.className = className; return element; }
 function renderList(container, items, emptyText, factory) {
   container.replaceChildren(...(items.length ? items.map(factory) : [tag(emptyText, 'empty-note')]));
+}
+function populateReview(reviewValue) {
+  const review = SamsarixAnalyzer.normalizeReview(reviewValue);
+  $('review-decision').value = review.decision;
+  $('review-note').value = review.note;
+  $('review-note-count').textContent = `${review.note.length}/500`;
+}
+function applyReviewInputs() {
+  if (!currentResult) return;
+  currentResult.review = SamsarixAnalyzer.normalizeReview({
+    decision: $('review-decision').value,
+    note: $('review-note').value,
+    updatedAt: new Date().toISOString()
+  });
+  $('review-note-count').textContent = `${$('review-note').value.length}/500`;
 }
 function display(result) {
   currentResult = result;
@@ -38,6 +54,7 @@ function display(result) {
     const item = document.createElement('li'); const link = document.createElement('a'); link.href = source.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = source.host; item.append(link); return item;
   });
   renderList($('outline-list'), result.outline || [], 'No heading outline detected', heading => { const item = document.createElement('li'); item.textContent = heading; return item; });
+  populateReview(result.review);
   updateComparisonOptions();
   show('results');
 }
@@ -65,26 +82,30 @@ async function updateHistory() {
   savedHistory = history;
   $('history-count').textContent = history.length ? `${history.length} saved ${history.length === 1 ? 'brief' : 'briefs'}` : 'No saved briefs';
   $('clear-history-btn').classList.toggle('hidden', history.length === 0);
-  $('history-list').replaceChildren(...history.slice(0, 5).map(item => {
+  const filter = $('history-filter').value;
+  const filtered = history.filter(item => filter === 'all' || (filter === 'unreviewed' ? !item.review?.decision : item.review?.decision === filter));
+  $('history-list').replaceChildren(...filtered.map(item => {
     const button = document.createElement('button'); button.className = 'history-item'; button.type = 'button'; button.setAttribute('aria-label', `Open saved brief: ${item.title}`);
     const title = document.createElement('strong'); title.textContent = item.title; const meta = document.createElement('span'); meta.textContent = `${item.wordCount.toLocaleString()} words · ${new Date(item.analyzedAt).toLocaleDateString()}`;
-    button.append(title, meta); button.addEventListener('click', () => display(item)); return button;
+    button.append(title, meta); if (item.review?.decision) button.append(tag(decisionLabels[item.review.decision], 'history-decision')); button.addEventListener('click', () => display(item)); return button;
   }));
+  $('history-empty').classList.toggle('hidden', filtered.length > 0);
   $('history-section').classList.toggle('hidden', history.length === 0);
   updateComparisonOptions();
 }
 async function save() {
   if (!currentResult) return;
+  applyReviewInputs();
   const history = await getHistory(); const next = [currentResult, ...history.filter(item => item.url !== currentResult.url)].slice(0, 25);
   await chrome.storage.local.set({ history: next }); $('save-btn').textContent = 'Saved'; setTimeout(() => { $('save-btn').textContent = 'Save locally'; }, 1200); await updateHistory();
 }
-function summary(result) { const readability = result.readabilityAvailable === false ? 'not available' : `${result.scores.readability}/100`; const sourceScore = result.sourceSignalsAvailable === false ? 'not analyzed' : `${result.scores.provenance}/100`; return `${result.title}\n${result.url}\n${result.wordCount} words · ${result.readingMinutes} min read\nReadability ${readability} · Structure ${result.scores.structure}/100 · Source signals ${sourceScore}\nGenerated locally by Samsarix Page Lens. Scores do not establish factuality or credibility.`; }
+function summary(result) { applyReviewInputs(); const readability = result.readabilityAvailable === false ? 'not available' : `${result.scores.readability}/100`; const sourceScore = result.sourceSignalsAvailable === false ? 'not analyzed' : `${result.scores.provenance}/100`; const decision = result.review?.decision ? `\nReview decision: ${decisionLabels[result.review.decision]}` : ''; return `${result.title}\n${result.url}\n${result.wordCount} words · ${result.readingMinutes} min read\nReadability ${readability} · Structure ${result.scores.structure}/100 · Source signals ${sourceScore}${decision}\nGenerated locally by Samsarix Page Lens. Scores do not establish factuality or credibility.`; }
 async function copy() { await navigator.clipboard.writeText(summary(currentResult)); $('copy-btn').textContent = 'Copied'; setTimeout(() => { $('copy-btn').textContent = 'Copy summary'; }, 1200); }
 function download(contents, type, extension) {
   const blob = new Blob([contents], { type }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `samsarix-page-lens-${Date.now()}.${extension}`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 0);
 }
-function exportJson() { download(JSON.stringify(currentResult, null, 2), 'application/json', 'json'); }
-function exportMarkdown() { download(SamsarixAnalyzer.toMarkdown(currentResult), 'text/markdown', 'md'); }
+function exportJson() { applyReviewInputs(); download(JSON.stringify(currentResult, null, 2), 'application/json', 'json'); }
+function exportMarkdown() { applyReviewInputs(); download(SamsarixAnalyzer.toMarkdown(currentResult), 'text/markdown', 'md'); }
 function updateComparisonOptions() {
   currentComparison = null; $('comparison-output').classList.add('hidden');
   comparisonCandidates = savedHistory.filter(item => currentResult && (item.url !== currentResult.url || item.analyzedAt !== currentResult.analyzedAt));
@@ -125,5 +146,6 @@ $('analyze-btn').addEventListener('click', analyze); $('retry-btn').addEventList
 $('json-btn').addEventListener('click', () => { try { exportJson(); } catch (error) { fail(error); } }); $('markdown-btn').addEventListener('click', () => { try { exportMarkdown(); } catch (error) { fail(error); } }); $('save-btn').addEventListener('click', () => save().catch(fail));
 $('compare-btn').addEventListener('click', () => { try { compare(); } catch (error) { fail(error); } }); $('copy-comparison-btn').addEventListener('click', () => copyComparison().catch(fail)); $('markdown-comparison-btn').addEventListener('click', () => { try { exportComparisonMarkdown(); } catch (error) { fail(error); } });
 $('compare-select').addEventListener('change', () => { currentComparison = null; $('comparison-output').classList.add('hidden'); });
+$('review-decision').addEventListener('change', applyReviewInputs); $('review-note').addEventListener('input', applyReviewInputs); $('history-filter').addEventListener('change', () => updateHistory().catch(fail));
 $('clear-history-btn').addEventListener('click', async () => { if (!confirm('Clear all saved briefs?')) return; try { await chrome.storage.local.remove('history'); await updateHistory(); } catch (error) { fail(error); } });
 document.addEventListener('DOMContentLoaded', () => initialize().catch(fail));

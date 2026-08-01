@@ -5,24 +5,25 @@ const os = require('node:os');
 const path = require('node:path');
 const { chromium } = require('playwright');
 const { extractPage } = require('../extension/extractor.js');
+const captureStoreAssets = process.argv.includes('--store-assets');
+const progressFile = path.resolve('output/browser-smoke-progress.txt');
+function checkpoint(message) { fs.mkdirSync(path.dirname(progressFile), { recursive: true }); fs.appendFileSync(progressFile, `${new Date().toISOString()} ${message}\n`); console.log(message); }
 
 async function screenshotPopup(page, file) {
-  await page.setViewportSize({ width: 410, height: 800 });
-  const session = await page.context().newCDPSession(page);
-  try {
-    const { cssContentSize } = await session.send('Page.getLayoutMetrics');
-    const screenshot = await session.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: { x: 0, y: 0, width: 410, height: cssContentSize.height, scale: 1 } });
-    fs.writeFileSync(file, Buffer.from(screenshot.data, 'base64'));
-  } finally { await session.detach(); }
+  const height = await page.evaluate(() => Math.min(10000, Math.ceil(document.documentElement.scrollHeight)));
+  await page.setViewportSize({ width: 410, height });
+  await page.screenshot({ path: file, animations: 'disabled', fullPage: false, timeout: 30000 });
 }
 
 (async () => {
+  fs.rmSync(progressFile, { force: true });
   const extensionPath = path.resolve('dist/samsarix-page-lens');
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'samsarix-page-lens-'));
   const context = await chromium.launchPersistentContext(profile, {
-    channel: 'chromium', headless: true,
+    channel: 'chromium', headless: true, acceptDownloads: true,
     args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`]
   });
+  let completed = false;
   try {
     const extensions = await context.newPage();
     await extensions.goto('chrome://extensions');
@@ -44,12 +45,24 @@ async function screenshotPopup(page, file) {
       return (await chrome.storage.local.get({ history: [] })).history[0];
     });
     if (migrated.url !== 'https://legacy.example/report' || migrated.sourceSignalsAvailable !== false) throw new Error('Legacy history was not privacy-migrated');
+    checkpoint('Browser smoke: legacy migration passed.');
     await popup.getByRole('button', { name: /Open saved brief: Legacy brief/ }).click();
     await popup.locator('#migration-note').waitFor();
     const result = await popup.evaluate(snapshot => { const analyzed = SamsarixAnalyzer.analyzePage(snapshot); display(analyzed); $('page-title').textContent = analyzed.title; $('page-url').textContent = analyzed.url; return analyzed; }, snapshot);
     if (result.url.includes('?') || result.sources[0].url.includes('?')) throw new Error('Result retained private URL parameters');
     await popup.getByText('Provenance checklist', { exact: true }).waitFor(); await popup.locator('#byline').getByText('Samsarix Research').waitFor();
-    await popup.evaluate(() => save()); await popup.getByText('Recent saved briefs').waitFor();
+    await popup.locator('#review-decision').selectOption('read-deeper'); await popup.locator('#review-note').fill('Verify the primary source before citing.');
+    await popup.evaluate(() => save()); await popup.getByText('Research queue').waitFor();
+    const storedReview = await popup.evaluate(async () => (await chrome.storage.local.get({ history: [] })).history[0].review);
+    if (storedReview.decision !== 'read-deeper' || storedReview.note !== 'Verify the primary source before citing.') throw new Error('Private review was not saved with the brief');
+    if (captureStoreAssets) {
+      fs.mkdirSync(path.resolve('output/playwright'), { recursive: true });
+      await popup.locator('.review-section').screenshot({ path: path.resolve('output/playwright/private-review-panel.png'), animations: 'disabled' });
+    }
+    await popup.locator('#history-filter').selectOption('read-deeper');
+    await popup.getByRole('button', { name: /Open saved brief: Research Signals/ }).waitFor();
+    await popup.locator('#history-filter').selectOption('skip'); await popup.getByText('No saved briefs match this filter.').waitFor(); await popup.locator('#history-filter').selectOption('all');
+    checkpoint('Browser smoke: private review and queue filtering passed.');
     await popup.getByRole('heading', { name: 'Compare with a saved brief' }).waitFor();
     if (await popup.locator('#compare-select option:checked').textContent() !== 'Legacy brief') throw new Error('Saved comparison baseline was not selectable');
     await popup.getByRole('button', { name: 'Compare', exact: true }).click();
@@ -57,34 +70,56 @@ async function screenshotPopup(page, file) {
     const comparison = await popup.evaluate(() => currentComparison);
     if (comparison.baseline.title !== 'Legacy brief' || comparison.current.title !== 'Research Signals') throw new Error('Local brief comparison used the wrong pages');
     if (!Number.isFinite(comparison.deltas.wordCount)) throw new Error('Local brief comparison did not calculate deltas');
+    checkpoint('Browser smoke: local comparison passed.');
     const [comparisonDownload] = await Promise.all([popup.waitForEvent('download'), popup.getByRole('button', { name: 'Comparison Markdown' }).click()]);
     if (!comparisonDownload.suggestedFilename().endsWith('.comparison.md')) throw new Error('Comparison Markdown export used an unexpected filename');
-    fs.mkdirSync(path.resolve('output/playwright'), { recursive: true });
-    await screenshotPopup(popup, path.resolve('output/playwright/page-lens-comparison.png'));
-    await popup.locator('#comparison-output').screenshot({ path: path.resolve('output/playwright/comparison-panel.png') });
+    await comparisonDownload.delete();
+    checkpoint('Browser smoke: comparison export passed.');
+    if (captureStoreAssets) {
+      await screenshotPopup(popup, path.resolve('output/playwright/page-lens-comparison.png'));
+      await popup.locator('#comparison-output').screenshot({ path: path.resolve('output/playwright/comparison-panel.png') });
+    }
     await popup.getByRole('button', { name: 'Open saved brief: Research Signals' }).click(); await popup.getByText('Source signals').first().waitFor();
+    if (await popup.locator('#review-decision').inputValue() !== 'read-deeper' || await popup.locator('#review-note').inputValue() !== 'Verify the primary source before citing.') throw new Error('Saved review did not reopen');
+    checkpoint('Browser smoke: saved review reopened.');
     await context.route('https://example.test/informe', route => route.fulfill({
       contentType: 'text/html; charset=utf-8',
       body: `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Informe público</title><meta name="author" content="Equipo de Investigación"></head><body><main><h1>Informe público</h1><p>${'La investigación pública reúne información útil y análisis cuidadoso. '.repeat(24)}</p><h2>Fuentes</h2><a href="https://fuente.example/estudio">Estudio principal</a></main></body></html>`
     }));
     const spanishPage = await context.newPage(); await spanishPage.goto('https://example.test/informe'); const spanishSnapshot = await spanishPage.evaluate(extractPage);
-    const spanishResult = await popup.evaluate(snapshot => { const analyzed = SamsarixAnalyzer.analyzePage(snapshot); display(analyzed); $('page-title').textContent = analyzed.title; $('page-url').textContent = analyzed.url; return analyzed; }, spanishSnapshot);
-    if (spanishResult.language !== 'es' || spanishResult.readabilityAvailable !== false || spanishResult.scores.readability !== null) throw new Error('Declared non-English readability was not suppressed');
-    if (await popup.locator('#readability-score').textContent() !== 'Not available') throw new Error('Popup did not render the unavailable readability state');
-    if (!/page declares es/i.test(await popup.locator('#readability-note').textContent())) throw new Error('Popup did not explain the declared-language limitation');
-    await screenshotPopup(popup, path.resolve('output/playwright/page-lens-multilingual.png'));
-    console.log(`Browser smoke passed for extension ${extensionId}.`);
+    const spanishState = await popup.evaluate(snapshot => { const analyzed = SamsarixAnalyzer.analyzePage(snapshot); display(analyzed); $('page-title').textContent = analyzed.title; $('page-url').textContent = analyzed.url; return { analyzed, scoreText: $('readability-score').textContent, noteText: $('readability-note').textContent }; }, spanishSnapshot);
+    if (spanishState.analyzed.language !== 'es' || spanishState.analyzed.readabilityAvailable !== false || spanishState.analyzed.scores.readability !== null) throw new Error('Declared non-English readability was not suppressed');
+    if (spanishState.scoreText !== 'Not available') throw new Error('Popup did not render the unavailable readability state');
+    if (!/page declares es/i.test(spanishState.noteText)) throw new Error('Popup did not explain the declared-language limitation');
+    checkpoint('Browser smoke: language-honest rendering passed.');
+    if (captureStoreAssets) {
+      const multilingualEvidence = await context.newPage();
+      await multilingualEvidence.goto(`chrome-extension://${extensionId}/popup.html`);
+      await multilingualEvidence.evaluate(analyzed => { display(analyzed); $('page-title').textContent = analyzed.title; $('page-url').textContent = analyzed.url; }, spanishState.analyzed);
+      await screenshotPopup(multilingualEvidence, path.resolve('output/playwright/page-lens-multilingual.png'));
+    await multilingualEvidence.close();
+    }
+    checkpoint(`Browser smoke passed for extension ${extensionId}.`);
+    completed = true;
   } finally {
     let closed = false;
     try {
+      checkpoint('Browser smoke: cleanup started.');
+      await Promise.race([Promise.all(context.pages().map(page => page.close({ runBeforeUnload: false }).catch(() => {}))), new Promise(resolve => setTimeout(resolve, 10000))]);
+      checkpoint('Browser smoke: pages closed or timed out.');
       closed = await Promise.race([context.close().then(() => true), new Promise(resolve => setTimeout(() => resolve(false), 10000))]);
+      checkpoint(`Browser smoke: context close ${closed ? 'passed' : 'timed out'}.`);
       if (!closed) {
         const browser = context.browser();
-        if (browser) await browser.close().catch(() => {});
-        closed = true;
+        if (browser) closed = await Promise.race([browser.close().then(() => true).catch(() => false), new Promise(resolve => setTimeout(() => resolve(false), 10000))]);
+        checkpoint(`Browser smoke: browser close ${closed ? 'passed' : 'timed out'}.`);
       }
     } finally {
-      if (closed) try { fs.rmSync(profile, { recursive: true, force: true }); } catch {}
+      if (closed) {
+        const removed = await Promise.race([fs.promises.rm(profile, { recursive: true, force: true }).then(() => true).catch(() => false), new Promise(resolve => setTimeout(() => resolve(false), 5000))]);
+        checkpoint(`Browser smoke: profile cleanup ${removed ? 'passed' : 'deferred to OS temp cleanup'}.`);
+        if (!removed && completed) process.exit(0);
+      } else if (completed) { checkpoint('Browser smoke: forcing successful exit after cleanup timeout.'); process.exit(0); }
     }
   }
 })().catch(error => { console.error(error); process.exit(1); });

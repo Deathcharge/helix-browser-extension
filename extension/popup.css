@@ -39,6 +39,16 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .notice, .methodology { padding: 8px 10px; border-radius: 7px; font-size: 10px; line-height: 1.45; }
 .notice { background: #3d3018; color: #f3d79b; }
 .methodology { margin: 12px 0; border: 1px solid #3a3f60; background: #171a31; color: #b8bcd3; }
+.review-section { margin: 12px 0; padding: 12px; border: 1px solid #3a3f60; border-radius: 8px; background: #14172b; }
+.review-section h2, .history-heading-row h2 { margin: 0; font-size: 13px; }
+.review-section label { display: flex; justify-content: space-between; margin: 10px 0 5px; color: #c8c5df; font-size: 11px; }
+.review-section select, .review-section textarea, .history-heading-row select { width: 100%; border: 1px solid #3b4063; border-radius: 7px; background: #0f1224; color: #f4f1ff; font: inherit; }
+.review-section select, .history-heading-row select { padding: 7px; }
+.review-section textarea { padding: 8px; resize: vertical; line-height: 1.4; }
+.review-privacy { margin: 7px 0 0; color: #9297b5; font-size: 10px; }
+.history-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.history-heading-row select { width: auto; max-width: 145px; }
+.history-decision { color: #9ddfc4; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 details { margin-top: 8px; border: 1px solid #303454; border-radius: 8px; background: #14172b; }
 summary { padding: 9px 10px; color: #d9d6e8; cursor: pointer; font-size: 11px; font-weight: 650; }
 .signal-list, .compact-list { display: grid; gap: 6px; margin: 0; padding: 0 10px 10px; list-style: none; }
