@@ -50,8 +50,17 @@ const { extractPage } = require('../extension/extractor.js');
     const [comparisonDownload] = await Promise.all([popup.waitForEvent('download'), popup.getByRole('button', { name: 'Comparison Markdown' }).click()]);
     if (!comparisonDownload.suggestedFilename().endsWith('.comparison.md')) throw new Error('Comparison Markdown export used an unexpected filename');
     await popup.getByRole('button', { name: 'Open saved brief: Research Signals' }).click(); await popup.getByText('Source signals').first().waitFor();
+    await context.route('https://example.test/informe', route => route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      body: `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Informe público</title><meta name="author" content="Equipo de Investigación"></head><body><main><h1>Informe público</h1><p>${'La investigación pública reúne información útil y análisis cuidadoso. '.repeat(24)}</p><h2>Fuentes</h2><a href="https://fuente.example/estudio">Estudio principal</a></main></body></html>`
+    }));
+    const spanishPage = await context.newPage(); await spanishPage.goto('https://example.test/informe'); const spanishSnapshot = await spanishPage.evaluate(extractPage);
+    const spanishResult = await popup.evaluate(snapshot => { const analyzed = SamsarixAnalyzer.analyzePage(snapshot); display(analyzed); return analyzed; }, spanishSnapshot);
+    if (spanishResult.language !== 'es' || spanishResult.readabilityAvailable !== false || spanishResult.scores.readability !== null) throw new Error('Declared non-English readability was not suppressed');
+    if (await popup.locator('#readability-score').textContent() !== 'Not available') throw new Error('Popup did not render the unavailable readability state');
+    if (!/page declares es/i.test(await popup.locator('#readability-note').textContent())) throw new Error('Popup did not explain the declared-language limitation');
     fs.mkdirSync(path.resolve('output/playwright'), { recursive: true });
-    await popup.screenshot({ path: path.resolve('output/playwright/samsarix-page-lens-1.3.png'), fullPage: true });
+    await popup.screenshot({ path: path.resolve('output/playwright/samsarix-page-lens-1.4.png'), fullPage: true });
     console.log(`Browser smoke passed for extension ${extensionId}.`);
   } finally {
     let closed = false;

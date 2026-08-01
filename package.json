@@ -1,6 +1,6 @@
 {
   "name": "samsarix-page-lens",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "description": "Local-first Chrome page analysis extension",
   "license": "MPL-2.0",
