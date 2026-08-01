@@ -30,6 +30,8 @@ Markdown and JSON export occur only after an explicit user action. The browserâ€
 
 The research-queue filter is computed locally from saved review decisions. Decisions and notes are included in explicit Markdown or JSON exports; they are not transmitted or synchronized by Page Lens.
 
+Whole-queue Markdown and versioned JSON backup are created only after an explicit user action. Queue import reads a user-selected local JSON file in the popup. Input is limited to 1 MB and 100 records; records are validated, sanitized, deduplicated, and capped at 25 stored briefs before one storage write. An invalid backup envelope or a backup containing no valid briefs does not modify existing history. Imported records take precedence over matching local URLs so a user can intentionally restore a prior copy. Page Lens does not upload, watch, or automatically synchronize backup files.
+
 Two-brief comparisons are computed locally and on demand from the current brief and a user-selected saved baseline. Comparisons are not added to history automatically. Copying or exporting a comparison is explicit, uses sanitized page URLs, and is then controlled by the system clipboard or browser download behavior.
 
 ## Permissions

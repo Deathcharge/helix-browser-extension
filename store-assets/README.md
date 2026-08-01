@@ -1,6 +1,6 @@
 # Chrome Web Store screenshots
 
-These 1280×800 PNGs are reproducible marketing compositions built from the installed-extension states exercised by `scripts/browser-smoke.cjs --store-assets`, including the 1.5 private-review decision panel. The regular `npm run test:browser` journey verifies the same behavior without spending CI time regenerating marketing evidence.
+These 1280×800 PNGs are reproducible marketing compositions built from the installed-extension states exercised by `scripts/browser-smoke.cjs --store-assets`, including the 1.6 portable-queue recovery panel. The regular `npm run test:browser` journey verifies the same behavior without spending CI time regenerating marketing evidence.
 
 Regenerate them from a clean checkout with:
 
@@ -10,4 +10,4 @@ npx playwright install chromium
 npm run build:store-assets
 ```
 
-The generator uses no remote fonts or imagery. The embedded product UI comes from the packaged 1.5 browser journey; surrounding copy is maintained in `scripts/store-assets.cjs`. Before submission, the store owner must review every image against the exact uploaded ZIP and current Chrome Web Store image/content policies.
+The generator uses no remote fonts or imagery. The embedded product UI comes from the packaged 1.6 browser journey; surrounding copy is maintained in `scripts/store-assets.cjs`. Before submission, the store owner must review every image against the exact uploaded ZIP and current Chrome Web Store image/content policies.
