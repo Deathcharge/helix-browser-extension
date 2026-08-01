@@ -91,8 +91,9 @@ async function updateHistory() {
     const title = document.createElement('strong'); title.textContent = item.title; const meta = document.createElement('span'); meta.textContent = `${item.wordCount.toLocaleString()} words · ${new Date(item.analyzedAt).toLocaleDateString()}`;
     button.append(title, meta); if (item.review?.decision) button.append(tag(decisionLabels[item.review.decision], 'history-decision')); button.addEventListener('click', () => display(item)); return button;
   }));
+  $('history-empty').textContent = history.length ? 'No saved briefs match this filter.' : 'No saved briefs yet. Import a Page Lens backup to restore a queue.';
   $('history-empty').classList.toggle('hidden', filtered.length > 0);
-  $('history-section').classList.toggle('hidden', history.length === 0);
+  $('history-filter').disabled = history.length === 0; $('queue-markdown-btn').disabled = history.length === 0; $('queue-json-btn').disabled = history.length === 0;
   updateComparisonOptions();
 }
 async function save() {
@@ -108,6 +109,19 @@ function download(contents, type, extension) {
 }
 function exportJson() { applyReviewInputs(); download(JSON.stringify(currentResult, null, 2), 'application/json', 'json'); }
 function exportMarkdown() { applyReviewInputs(); download(SamsarixAnalyzer.toMarkdown(currentResult), 'text/markdown', 'md'); }
+async function exportQueueJson() { download(JSON.stringify(SamsarixAnalyzer.createQueueBackup(await getHistory()), null, 2), 'application/json', 'queue.json'); }
+async function exportQueueMarkdown() { download(SamsarixAnalyzer.toQueueMarkdown(await getHistory()), 'text/markdown', 'queue.md'); }
+function setQueueStatus(message) { $('queue-status').textContent = message; $('queue-status').classList.toggle('hidden', !message); }
+async function importQueueBackup(file) {
+  if (!file) return;
+  if (file.size > 1000000) throw new Error('Queue backup must be 1 MB or smaller.');
+  let value;
+  try { value = JSON.parse(await file.text()); } catch { throw new Error('Queue backup is not valid JSON.'); }
+  const imported = SamsarixAnalyzer.parseQueueBackup(value);
+  const history = await getHistory(); const merged = SamsarixAnalyzer.mergeQueueHistory(imported.briefs, history);
+  await chrome.storage.local.set({ history: merged }); await updateHistory();
+  setQueueStatus(`Imported ${imported.briefs.length} ${imported.briefs.length === 1 ? 'brief' : 'briefs'}${imported.skipped ? ` · skipped ${imported.skipped} invalid or duplicate` : ''}. Queue now has ${merged.length}.`);
+}
 function updateComparisonOptions() {
   currentComparison = null; $('comparison-output').classList.add('hidden');
   comparisonCandidates = savedHistory.filter(item => currentResult && (item.url !== currentResult.url || item.analyzedAt !== currentResult.analyzedAt));
@@ -149,5 +163,7 @@ $('json-btn').addEventListener('click', () => { try { exportJson(); } catch (err
 $('compare-btn').addEventListener('click', () => { try { compare(); } catch (error) { fail(error); } }); $('copy-comparison-btn').addEventListener('click', () => copyComparison().catch(fail)); $('markdown-comparison-btn').addEventListener('click', () => { try { exportComparisonMarkdown(); } catch (error) { fail(error); } });
 $('compare-select').addEventListener('change', () => { currentComparison = null; $('comparison-output').classList.add('hidden'); });
 $('review-decision').addEventListener('change', applyReviewInputs); $('review-note').addEventListener('input', applyReviewInputs); $('history-filter').addEventListener('change', () => updateHistory().catch(fail));
-$('clear-history-btn').addEventListener('click', async () => { if (!confirm('Clear all saved briefs?')) return; try { await chrome.storage.local.remove('history'); await updateHistory(); } catch (error) { fail(error); } });
+$('queue-json-btn').addEventListener('click', () => exportQueueJson().catch(fail)); $('queue-markdown-btn').addEventListener('click', () => exportQueueMarkdown().catch(fail));
+$('queue-import-btn').addEventListener('click', () => $('queue-import-file').click()); $('queue-import-file').addEventListener('change', event => { const file = event.target.files?.[0]; event.target.value = ''; setQueueStatus(''); importQueueBackup(file).catch(fail); });
+$('clear-history-btn').addEventListener('click', async () => { if (!confirm('Clear all saved briefs?')) return; try { await chrome.storage.local.remove('history'); setQueueStatus(''); await updateHistory(); } catch (error) { fail(error); } });
 document.addEventListener('DOMContentLoaded', () => initialize().catch(fail));

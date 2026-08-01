@@ -144,6 +144,33 @@
     const reviewSection = review.decision || review.note ? `\n\n## Private review\n\n- Decision: ${decisionLabels[review.decision] || 'Not decided'}${review.note ? `\n- Note: ${escapeMarkdown(review.note)}` : ''}` : '';
     return `# ${escapeMarkdown(result.title)}\n\n${result.url ? `Source: ${sanitizeUrl(result.url)}\n\n` : ''}Analyzed locally: ${escapeMarkdown(result.analyzedAt)}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${readability}\n- Structure: ${result.scores.structure}/100\n- Source signals: ${sourceScore}${reviewSection}\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${escapeMarkdown(item.term)}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
   }
+  const QUEUE_FORMAT = 'samsarix-page-lens-queue';
+  function queueIdentity(item) { return item.url || `${item.title}\n${item.analyzedAt}`; }
+  function normalizeQueue(items, limit = 25) {
+    const seen = new Set(); const briefs = [];
+    for (const value of Array.isArray(items) ? items : []) {
+      const item = migrateStoredResult(value); if (!item) continue;
+      const identity = queueIdentity(item); if (seen.has(identity)) continue;
+      seen.add(identity); briefs.push(item); if (briefs.length >= limit) break;
+    }
+    return briefs;
+  }
+  function createQueueBackup(items, exportedAt = new Date().toISOString()) {
+    return { format: QUEUE_FORMAT, formatVersion: 1, exportedAt: validDate(exportedAt) || new Date(0).toISOString(), briefs: normalizeQueue(items) };
+  }
+  function parseQueueBackup(value) {
+    if (!value || typeof value !== 'object' || value.format !== QUEUE_FORMAT || value.formatVersion !== 1 || !Array.isArray(value.briefs)) throw new Error('Choose a valid Samsarix Page Lens queue backup.');
+    if (value.briefs.length > 100) throw new Error('Queue backups may contain at most 100 input records.');
+    const briefs = normalizeQueue(value.briefs);
+    if (!briefs.length && value.briefs.length) throw new Error('The queue backup contains no valid briefs.');
+    return { briefs, skipped: value.briefs.length - briefs.length };
+  }
+  function mergeQueueHistory(imported, existing) { return normalizeQueue([...(Array.isArray(imported) ? imported : []), ...(Array.isArray(existing) ? existing : [])]); }
+  function toQueueMarkdown(items) {
+    const briefs = normalizeQueue(items);
+    const body = briefs.length ? briefs.map(toMarkdown).join('\n---\n\n') : '_No saved briefs._\n';
+    return `# Samsarix Page Lens research queue\n\n${briefs.length} saved ${briefs.length === 1 ? 'brief' : 'briefs'} exported from local browser storage.\n\n${body}`;
+  }
   function migrateStoredResult(item) {
     if (!item || typeof item !== 'object' || ![1, 2].includes(item.schemaVersion) || typeof item.title !== 'string' || !Number.isFinite(item.wordCount)) return null;
     const legacy = item.schemaVersion === 1;
@@ -182,5 +209,5 @@
       methodology: legacy ? 'Legacy brief migrated with private URL components removed. Reanalyze the page to collect source signals.' : String(item.methodology || '').slice(0, 300)
     };
   }
-  return { analyzePage, compareBriefs, escapeMarkdown, migrateStoredResult, normalizeReview, sanitizeUrl, syllables, toComparisonMarkdown, toMarkdown, topKeywords };
+  return { analyzePage, compareBriefs, createQueueBackup, escapeMarkdown, mergeQueueHistory, migrateStoredResult, normalizeReview, parseQueueBackup, sanitizeUrl, syllables, toComparisonMarkdown, toMarkdown, toQueueMarkdown, topKeywords };
 });

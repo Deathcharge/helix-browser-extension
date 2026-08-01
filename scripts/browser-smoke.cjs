@@ -39,6 +39,8 @@ async function screenshotPopup(page, file) {
     if (snapshot.text.includes('private form value')) throw new Error('Extractor included form content');
     if (snapshot.author !== 'Samsarix Research' || snapshot.sources.length !== 1) throw new Error('Extractor missed provenance metadata');
     const popup = await context.newPage(); await popup.goto(`chrome-extension://${extensionId}/popup.html`); await popup.getByText('Samsarix Page Lens').waitFor();
+    await popup.getByRole('button', { name: 'Import backup' }).waitFor();
+    if (!await popup.getByRole('button', { name: 'Backup JSON' }).isDisabled()) throw new Error('Empty queue allowed an empty backup export');
     const migrated = await popup.evaluate(async () => {
       await chrome.storage.local.set({ history: [{ schemaVersion: 1, url: 'https://legacy.example/report?token=private#fragment', title: 'Legacy brief', wordCount: 50, readingMinutes: 1, analyzedAt: '2026-01-01', scores: { readability: 70, structure: 60, evidence: 90 }, counts: { headings: 2, paragraphs: 3, links: 1, citations: 0 }, keywords: [{ term: 'legacy', count: 2 }], excerpt: 'Legacy preview' }] });
       await updateHistory();
@@ -85,6 +87,19 @@ async function screenshotPopup(page, file) {
     await popup.evaluate(() => applyReviewInputs());
     if (await popup.evaluate(() => currentResult.review.updatedAt) !== reviewTimestamp) throw new Error('Unchanged review input rewrote its edit timestamp');
     checkpoint('Browser smoke: saved review reopened.');
+    const [queueDownload] = await Promise.all([popup.waitForEvent('download'), popup.getByRole('button', { name: 'Backup JSON' }).click()]);
+    if (!queueDownload.suggestedFilename().endsWith('.queue.json')) throw new Error('Queue backup used an unexpected filename');
+    const queueBackup = JSON.parse(fs.readFileSync(await queueDownload.path(), 'utf8'));
+    if (queueBackup.format !== 'samsarix-page-lens-queue' || queueBackup.briefs.length !== 2) throw new Error('Queue backup did not contain the saved research queue');
+    await queueDownload.delete();
+    const importedBrief = { ...queueBackup.briefs[0], url: 'https://imported.example/report?private=removed', title: 'Imported reference', review: { decision: 'reference', note: 'Restored from a local backup.', updatedAt: '2026-08-01' } };
+    await popup.locator('#queue-import-file').setInputFiles({ name: 'page-lens.queue.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ ...queueBackup, briefs: [importedBrief, { invalid: true }] })) });
+    await popup.getByText(/Imported 1 brief · skipped 1/).waitFor();
+    const importedHistory = await popup.evaluate(async () => (await chrome.storage.local.get({ history: [] })).history);
+    if (importedHistory[0].url !== 'https://imported.example/report' || importedHistory[0].review.decision !== 'reference') throw new Error('Queue import did not normalize and prioritize the imported brief');
+    await popup.locator('#history-filter').selectOption('reference'); await popup.getByRole('button', { name: /Open saved brief: Imported reference/ }).waitFor(); await popup.locator('#history-filter').selectOption('all');
+    if (captureStoreAssets) await popup.locator('#history-section').screenshot({ path: path.resolve('output/playwright/portable-queue-panel.png'), animations: 'disabled' });
+    checkpoint('Browser smoke: queue backup, import, and recovery filtering passed.');
     await context.route('https://example.test/informe', route => route.fulfill({
       contentType: 'text/html; charset=utf-8',
       body: `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Informe público</title><meta name="author" content="Equipo de Investigación"></head><body><main><h1>Informe público</h1><p>${'La investigación pública reúne información útil y análisis cuidadoso. '.repeat(24)}</p><h2>Fuentes</h2><a href="https://fuente.example/estudio">Estudio principal</a></main></body></html>`

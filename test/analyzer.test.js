@@ -2,7 +2,7 @@
 // Copyright 2026 Samsarix LLC
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { analyzePage, compareBriefs, migrateStoredResult, normalizeReview, sanitizeUrl, toComparisonMarkdown, toMarkdown, topKeywords } = require('../extension/analyzer.js');
+const { analyzePage, compareBriefs, createQueueBackup, mergeQueueHistory, migrateStoredResult, normalizeReview, parseQueueBackup, sanitizeUrl, toComparisonMarkdown, toMarkdown, toQueueMarkdown, topKeywords } = require('../extension/analyzer.js');
 
 const sample = {
   url: 'https://example.com/report?token=secret#private', title: 'Example report', description: 'A useful report', language: 'en', author: 'Research Team',
@@ -147,4 +147,32 @@ test('Markdown export includes an escaped private review when present', () => {
   assert.ok(markdown.includes('Useful \\[context\\]\\(https://evil\\.example\\)'));
   assert.doesNotMatch(markdown, /\[context\]\(https:\/\/evil\.example\)/);
   assert.doesNotMatch(toMarkdown(analyzePage(sample)), /## Private review/);
+});
+test('creates and parses a versioned bounded queue backup', () => {
+  const first = analyzePage(sample);
+  first.review = { decision: 'read-deeper', note: 'Check the source.', updatedAt: '2026-07-20' };
+  const duplicate = { ...first, title: 'Duplicate should lose' };
+  const backup = createQueueBackup([first, duplicate], '2026-08-01');
+  assert.equal(backup.format, 'samsarix-page-lens-queue');
+  assert.equal(backup.formatVersion, 1);
+  assert.equal(backup.exportedAt, '2026-08-01T00:00:00.000Z');
+  assert.equal(backup.briefs.length, 1);
+  const parsed = parseQueueBackup({ ...backup, briefs: [...backup.briefs, { nope: true }] });
+  assert.equal(parsed.briefs.length, 1); assert.equal(parsed.skipped, 1);
+  assert.equal(parsed.briefs[0].review.note, 'Check the source.');
+});
+test('rejects untrusted or unbounded queue backups without partial results', () => {
+  assert.throws(() => parseQueueBackup({ format: 'other', formatVersion: 1, briefs: [] }), /valid Samsarix/);
+  assert.throws(() => parseQueueBackup({ format: 'samsarix-page-lens-queue', formatVersion: 1, briefs: Array(101).fill({}) }), /at most 100/);
+  assert.throws(() => parseQueueBackup({ format: 'samsarix-page-lens-queue', formatVersion: 1, briefs: [{ title: 'bad' }] }), /no valid briefs/);
+});
+test('merges imported queue records first and exports portable Markdown', () => {
+  const existing = analyzePage(sample);
+  const imported = analyzePage({ ...sample, title: 'Imported update' });
+  imported.review = { decision: 'reference', note: 'Portable note', updatedAt: '2026-08-01' };
+  const second = analyzePage({ ...sample, url: 'https://second.example/report', title: 'Second report' });
+  const merged = mergeQueueHistory([imported, second], [existing]);
+  assert.equal(merged.length, 2); assert.equal(merged[0].title, 'Imported update');
+  const markdown = toQueueMarkdown(merged);
+  assert.match(markdown, /2 saved briefs/); assert.match(markdown, /Imported update/); assert.match(markdown, /Portable note/);
 });
