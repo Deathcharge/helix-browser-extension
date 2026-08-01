@@ -16,7 +16,7 @@ The page’s declared HTML language is used locally to decide whether the Englis
 
 ## Data stored or exported
 
-Nothing is saved automatically. When the user selects **Save locally**, the extension stores the resulting source brief in `chrome.storage.local`. Briefs contain structured counts, scores, visible metadata, frequent terms, an outline, external source domains, timestamps, and an excerpt of at most 280 characters.
+Nothing is saved automatically. When the user selects **Save locally**, the extension stores the resulting source brief in `chrome.storage.local`. Briefs contain structured counts, scores, visible metadata, frequent terms, an outline, external source domains, timestamps, an excerpt of at most 280 characters, and any review decision or note entered by the user. Review notes are capped at 500 characters. The popup warns users not to put secrets in notes.
 
 Before storage or export, URL credentials, query parameters, and fragments are removed from the analyzed page URL and linked source URLs. This reduces accidental retention of tokens and private identifiers but cannot make titles, paths, metadata, or excerpts non-sensitive.
 
@@ -27,6 +27,8 @@ Chrome shares `chrome.storage.local` between regular and Incognito extension con
 On upgrade from version 1.1, legacy saved records are rewritten as schema-v2 records with URL credentials, queries, and fragments removed. Legacy reading and structure metrics are preserved, while unavailable source signals are marked for reanalysis.
 
 Markdown and JSON export occur only after an explicit user action. The browser’s normal download behavior controls the resulting file.
+
+The research-queue filter is computed locally from saved review decisions. Decisions and notes are included in explicit Markdown or JSON exports; they are not transmitted or synchronized by Page Lens.
 
 Two-brief comparisons are computed locally and on demand from the current brief and a user-selected saved baseline. Comparisons are not added to history automatically. Copying or exporting a comparison is explicit, uses sanitized page URLs, and is then controlled by the system clipboard or browser download behavior.
 

@@ -34,6 +34,12 @@
     return Number.isNaN(date.getTime()) ? null : date.toISOString();
   }
   function normalizeLanguage(value) { return String(value || '').trim().toLowerCase().replace(/_/g, '-').slice(0, 20); }
+  const REVIEW_DECISIONS = new Set(['read-deeper', 'reference', 'skip']);
+  function normalizeReview(value) {
+    const decision = REVIEW_DECISIONS.has(value?.decision) ? value.decision : '';
+    const note = String(value?.note || '').replace(/\r\n?/g, '\n').trim().slice(0, 500);
+    return { decision, note, updatedAt: decision || note ? (validDate(value?.updatedAt) || new Date(0).toISOString()) : null };
+  }
   function readabilityState(language) {
     if (!language) return { available: false, basis: 'undeclared-language' };
     if (language.split('-')[0] === 'en') return { available: true, basis: 'declared-English' };
@@ -89,6 +95,7 @@
       sources, provenanceSignals, excerpt: text.slice(0, 280), extraction: { visitedNodes: Math.max(0, Number(snapshot.visitedNodes) || 0), truncated: Boolean(snapshot.truncated) },
       readabilityAvailable: readability.available, readabilityBasis: readability.basis,
       sourceSignalsAvailable: true,
+      review: { decision: '', note: '', updatedAt: null },
       methodology: 'Transparent local heuristics. Readability uses an English formula only for pages that declare English; source signals do not establish truth, credibility, or quality.'
     };
   }
@@ -132,7 +139,10 @@
     const signalLines = result.provenanceSignals?.map(signal => `- ${signal.present ? '✓' : '○'} ${escapeMarkdown(signal.label)}: ${escapeMarkdown(signal.detail)}`).join('\n') || '';
     const readability = result.readabilityAvailable === false ? (result.readabilityBasis === 'undeclared-language' ? 'Not available (page language undeclared)' : `Not available for ${escapeMarkdown(result.language || 'this language')}`) : `${result.scores.readability}/100`;
     const sourceScore = result.sourceSignalsAvailable === false ? 'Not analyzed' : `${result.scores.provenance}/100`;
-    return `# ${escapeMarkdown(result.title)}\n\n${result.url ? `Source: ${sanitizeUrl(result.url)}\n\n` : ''}Analyzed locally: ${escapeMarkdown(result.analyzedAt)}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${readability}\n- Structure: ${result.scores.structure}/100\n- Source signals: ${sourceScore}\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${escapeMarkdown(item.term)}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
+    const review = normalizeReview(result.review);
+    const decisionLabels = { 'read-deeper': 'Read deeper', reference: 'Keep as reference', skip: 'Skip' };
+    const reviewSection = review.decision || review.note ? `\n\n## Private review\n\n- Decision: ${decisionLabels[review.decision] || 'Not decided'}${review.note ? `\n- Note: ${escapeMarkdown(review.note)}` : ''}` : '';
+    return `# ${escapeMarkdown(result.title)}\n\n${result.url ? `Source: ${sanitizeUrl(result.url)}\n\n` : ''}Analyzed locally: ${escapeMarkdown(result.analyzedAt)}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${readability}\n- Structure: ${result.scores.structure}/100\n- Source signals: ${sourceScore}${reviewSection}\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${escapeMarkdown(item.term)}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
   }
   function migrateStoredResult(item) {
     if (!item || typeof item !== 'object' || ![1, 2].includes(item.schemaVersion) || typeof item.title !== 'string' || !Number.isFinite(item.wordCount)) return null;
@@ -168,8 +178,9 @@
       extraction: { visitedNodes: Math.max(0, Number(item.extraction?.visitedNodes) || 0), truncated: Boolean(item.extraction?.truncated) },
       readabilityAvailable,
       readabilityBasis: readabilityAvailable ? readability.basis : (item.readabilityAvailable === false && readability.available ? 'unavailable' : readability.basis),
+      review: normalizeReview(item.review),
       methodology: legacy ? 'Legacy brief migrated with private URL components removed. Reanalyze the page to collect source signals.' : String(item.methodology || '').slice(0, 300)
     };
   }
-  return { analyzePage, compareBriefs, escapeMarkdown, migrateStoredResult, sanitizeUrl, syllables, toComparisonMarkdown, toMarkdown, topKeywords };
+  return { analyzePage, compareBriefs, escapeMarkdown, migrateStoredResult, normalizeReview, sanitizeUrl, syllables, toComparisonMarkdown, toMarkdown, topKeywords };
 });

@@ -194,3 +194,21 @@ Local release evidence for 1.4:
 - `.github/workflows/privacy-pages.yml` uses immutable action SHAs, disables checkout credential persistence, and deploys only through explicit `workflow_dispatch`; it does not silently publish on a push.
 - Static policy checks enforce action pinning, manual-only publication, key disclosure claims, and exactly three 1280×800 PNG assets.
 - Enabling Pages, running the workflow, verifying the public HTTPS URL, and submitting the store package remain owner-controlled external actions.
+
+## Samsarix 1.5 private research queue
+
+The post-triage journey now turns a page brief into a local research decision instead of stopping at inspection:
+
+- Mark a brief as **Read deeper**, **Keep as reference**, **Skip**, or leave it unreviewed.
+- Attach an optional user-entered note capped at 500 characters, with an explicit warning not to record secrets.
+- Save review metadata only through **Save locally**, reopen it with the brief, and filter the bounded 25-item queue by decision.
+- Include review metadata in explicit Markdown and JSON handoff while escaping Markdown control characters.
+- Normalize older or malformed stored records to the bounded review shape without invalidating schema-v2 history.
+
+Local release evidence for 1.5:
+
+- Manifest/privacy/workflow policy checks and all 24 deterministic unit tests pass.
+- The packaged Chromium journey covers legacy migration, review entry and persistence, decision filtering, history reopening, saved-baseline comparison/export, and declared non-English behavior.
+- `npm audit`: 0 vulnerabilities.
+- Two independent builds produced the same `dist/samsarix-page-lens-1.5.0.zip` SHA-256: `336FF93EA34E385D5A8784A61B4AC34159AABBE8DEBA6D6A2A78AB155FD2963B`.
+- PR head, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.

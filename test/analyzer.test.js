@@ -2,7 +2,7 @@
 // Copyright 2026 Samsarix LLC
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { analyzePage, compareBriefs, migrateStoredResult, sanitizeUrl, toComparisonMarkdown, toMarkdown, topKeywords } = require('../extension/analyzer.js');
+const { analyzePage, compareBriefs, migrateStoredResult, normalizeReview, sanitizeUrl, toComparisonMarkdown, toMarkdown, topKeywords } = require('../extension/analyzer.js');
 
 const sample = {
   url: 'https://example.com/report?token=secret#private', title: 'Example report', description: 'A useful report', language: 'en', author: 'Research Team',
@@ -126,4 +126,25 @@ test('removes misleading readability when migrating a declared non-English brief
   assert.equal(migrated.readabilityAvailable, false);
   assert.equal(migrated.scores.readability, null);
   assert.equal(migrateStoredResult(migrated).readabilityBasis, 'unsupported-language');
+});
+test('normalizes bounded local review metadata during migration', () => {
+  const migrated = migrateStoredResult({
+    ...analyzePage(sample),
+    review: { decision: 'read-deeper', note: `  useful\r\n${'x'.repeat(600)}  `, updatedAt: '2026-07-20' }
+  });
+  assert.equal(migrated.review.decision, 'read-deeper');
+  assert.equal(migrated.review.note.length, 500);
+  assert.match(migrated.review.note, /^useful\n/);
+  assert.equal(migrated.review.updatedAt, '2026-07-20T00:00:00.000Z');
+  assert.deepEqual(normalizeReview({ decision: 'invented', note: '' }), { decision: '', note: '', updatedAt: null });
+});
+test('Markdown export includes an escaped private review when present', () => {
+  const result = analyzePage(sample);
+  result.review = { decision: 'reference', note: 'Useful [context](https://evil.example)', updatedAt: '2026-07-20' };
+  const markdown = toMarkdown(result);
+  assert.match(markdown, /## Private review/);
+  assert.match(markdown, /Decision: Keep as reference/);
+  assert.ok(markdown.includes('Useful \\[context\\]\\(https://evil\\.example\\)'));
+  assert.doesNotMatch(markdown, /\[context\]\(https:\/\/evil\.example\)/);
+  assert.doesNotMatch(toMarkdown(analyzePage(sample)), /## Private review/);
 });

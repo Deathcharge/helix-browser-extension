@@ -1,6 +1,6 @@
 {
   "name": "samsarix-page-lens",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "Local-first Chrome page analysis extension",
   "license": "MPL-2.0",
@@ -10,7 +10,7 @@
     "lint": "node scripts/check.mjs",
     "test": "node --test",
     "build": "node scripts/build.mjs",
-    "build:store-assets": "npm run build && npm run test:browser && node scripts/store-assets.cjs",
+    "build:store-assets": "npm run build && node scripts/browser-smoke.cjs --store-assets && node scripts/store-assets.cjs",
     "test:browser": "node scripts/browser-smoke.cjs"
   },
   "devDependencies": {
