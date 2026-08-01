@@ -55,6 +55,7 @@ if (workflows.flatMap(item => checkoutSteps(item.source)).some(step => !/^\s+per
 if (!/node-version:\s*24\b/.test(workflow)) throw new Error('CI must use the supported Node.js 24 baseline');
 const pagesWorkflow = workflows.find(item => item.name === 'privacy-pages.yml')?.source || '';
 if (JSON.stringify(topLevelTriggerNames(pagesWorkflow)) !== JSON.stringify(['workflow_dispatch'])) throw new Error('Privacy Pages publication must have workflow_dispatch as its only trigger');
+if (!/node scripts\/verify-live-privacy\.mjs/.test(pagesWorkflow)) throw new Error('Privacy Pages publication must verify the deployed bytes');
 for (const claim of ['no account system, analytics, advertising', 'at most 15,000 DOM nodes', 'capped at 25 briefs', 'capped at 500 characters', 'limited to 1 MB and 100 input records', 'support@samsarix.com']) {
   if (!privacySite.includes(claim)) throw new Error(`Hosted privacy disclosure is missing required claim: ${claim}`);
 }
