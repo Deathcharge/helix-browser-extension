@@ -2,7 +2,7 @@
 // Copyright 2026 Samsarix LLC
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const manifest = require('../helix_browser_extension/helix-browser-extension/manifest.json');
+const manifest = require('../extension/manifest.json');
 test('ships a minimal Manifest V3 permission set', () => {
   assert.equal(manifest.manifest_version, 3);
   assert.deepEqual(manifest.permissions.sort(), ['activeTab', 'scripting', 'storage']);
@@ -12,6 +12,6 @@ test('ships a minimal Manifest V3 permission set', () => {
 });
 test('ships Samsarix release metadata', () => {
   assert.equal(manifest.name, 'Samsarix Page Lens');
-  assert.equal(manifest.version, '1.1.0');
+  assert.equal(manifest.version, '1.2.0');
   assert.equal(manifest.homepage_url, 'https://samsarix.com');
 });
