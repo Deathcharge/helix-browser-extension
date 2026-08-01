@@ -164,6 +164,6 @@ Local release evidence for 1.3:
 
 - `npm run check`: passed the manifest/privacy policy, 18 unit tests, deterministic build, and installed-extension Chromium journey.
 - `npm audit`: 0 vulnerabilities.
-- Two independent builds produced the same `dist/samsarix-page-lens-1.3.0.zip` SHA-256: `603A8A9D0312A5C75E4145504F0471C1ABE545805DCA1645B52CE9EBA83C2E14`.
+- Two independent builds produced the same `dist/samsarix-page-lens-1.3.0.zip` SHA-256: `939BCD4DB880E1F2ED4ABD8B6352D452DF0E84D3C72FB95B2320682B0329C392`.
 - PR, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.
 - Hosted privacy URL, final screenshots, store account, signed upload, and bounded pilot feedback.
