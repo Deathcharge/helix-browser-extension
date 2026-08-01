@@ -7,7 +7,7 @@ This roadmap separates four gates: merge, release, publication, and flagship ado
 Portfolio role: **integration or extension**. Keep its platform-specific packaging and release lifecycle separate. Any flagship integration should use a documented HTTP, event, or package contract with explicit auth, privacy, and failure ownership.
 Planned repository identity: `Deathcharge/samsarix-page-lens` (ready).
 
-Current disposition: productization is merged. Version 1.3 develops the private source-triage wedge with saved-baseline comparison; public release and adoption remain separate decisions.
+Current disposition: productization is merged. Version 1.4 develops the private source-triage wedge with saved-baseline comparison and language-honest readability; public release and adoption remain separate decisions.
 
 ## Stabilize the productized default
 
@@ -32,7 +32,7 @@ Current hardening backlog:
 
 - Popup/Chrome integration, extraction, sanitization, history, and the exact built artifact are covered by committed Chromium smoke testing. Manual toolbar `activeTab` behavior and clipboard/download prompts remain release gates.
 - No store account, screenshots, hosted privacy disclosure, signed submission, or adoption evidence.
-- English-oriented tokenization/readability remains a limitation; unsupported-language behavior needs an explicit product decision.
+- [x] Use Unicode-aware word/term tokenization; calculate the English readability formula only for declared English or undeclared-language pages, label the latter assumption, and show an unavailable state for declared non-English pages.
 - Provenance cues vary by page type and need pilot feedback before weighting is treated as stable.
 - CSS-only hidden content is not detected; privacy copy now states this precisely.
 - [x] Rename the extracted source directory to the canonical `extension/` path.

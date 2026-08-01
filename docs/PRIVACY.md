@@ -12,6 +12,8 @@ Extraction visits at most 15,000 DOM nodes and retains at most 250,000 character
 
 Processing occurs locally in the browser. Unsaved page text exists only in memory while the extension popup is active.
 
+The page’s declared HTML language is used locally to decide whether the English readability formula applies. No remote language detection occurs. Declared non-English pages retain word, term, structure, and source analysis but receive no readability score; an undeclared language is visibly labeled as an English assumption.
+
 ## Data stored or exported
 
 Nothing is saved automatically. When the user selects **Save locally**, the extension stores the resulting source brief in `chrome.storage.local`. Briefs contain structured counts, scores, visible metadata, frequent terms, an outline, external source domains, timestamps, and an excerpt of at most 280 characters.
