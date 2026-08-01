@@ -19,7 +19,8 @@ test('creates a provenance-aware source brief', () => {
   assert.equal(result.author, 'Research Team');
   assert.equal(result.sources[0].url, 'https://source.example/paper');
   assert.deepEqual(result.outline, ['Overview', 'Findings']);
-  for (const score of Object.values(result.scores)) assert.ok(score >= 0 && score <= 100);
+  for (const score of Object.values(result.scores).filter(Number.isFinite)) assert.ok(score >= 0 && score <= 100);
+  assert.equal(result.readabilityAvailable, true); assert.equal(result.readabilityBasis, 'declared-English');
   assert.equal(result.provenanceSignals.filter(signal => signal.present).length, 5);
 });
 test('rejects pages without enough readable text', () => assert.throws(() => analyzePage({ text: 'Too short.' }), /at least 20 words/));
@@ -95,4 +96,34 @@ test('comparison marks unavailable legacy source signals as not comparable', () 
   const current = analyzePage(sample);
   const legacy = migrateStoredResult({ schemaVersion: 1, url: 'https://legacy.example', title: 'Legacy', wordCount: 50, scores: { readability: 50, structure: 50 }, counts: {}, keywords: [] });
   assert.equal(compareBriefs(current, legacy).deltas.provenance, null);
+});
+test('keeps non-English triage useful without applying an English readability score', () => {
+  const result = analyzePage({ ...sample, language: 'ES_mx', text: 'La investigación pública reúne información útil y análisis cuidadoso. '.repeat(20) });
+  assert.equal(result.language, 'es-mx');
+  assert.equal(result.readabilityAvailable, false);
+  assert.equal(result.readabilityBasis, 'unsupported-language');
+  assert.equal(result.scores.readability, null);
+  assert.equal(result.wordCount, 180);
+  assert.ok(result.keywords.some(keyword => keyword.term === 'investigación'));
+  assert.match(toMarkdown(result), /Readability: Not available for es\\-mx/);
+});
+test('withholds readability when the page language is undeclared', () => {
+  const result = analyzePage({ ...sample, language: '' });
+  assert.equal(result.readabilityAvailable, false);
+  assert.equal(result.readabilityBasis, 'undeclared-language');
+  assert.equal(result.scores.readability, null);
+  assert.match(toMarkdown(result), /Not available \(page language undeclared\)/);
+});
+test('does not compare readability across supported and unsupported languages', () => {
+  const english = analyzePage(sample);
+  const spanish = analyzePage({ ...sample, language: 'es', title: 'Informe', text: 'La investigación pública reúne información útil y análisis cuidadoso. '.repeat(20) });
+  const comparison = compareBriefs(spanish, english);
+  assert.equal(comparison.deltas.readability, null);
+  assert.match(toComparisonMarkdown(comparison), /Readability: Not comparable/);
+});
+test('removes misleading readability when migrating a declared non-English brief', () => {
+  const migrated = migrateStoredResult({ ...analyzePage(sample), language: 'fr', scores: { readability: 88, structure: 50, provenance: 50 } });
+  assert.equal(migrated.readabilityAvailable, false);
+  assert.equal(migrated.scores.readability, null);
+  assert.equal(migrateStoredResult(migrated).readabilityBasis, 'unsupported-language');
 });

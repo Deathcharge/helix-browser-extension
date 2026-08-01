@@ -5,7 +5,7 @@ Samsarix Page Lens creates a private source-triage brief for the webpage in fron
 One explicit click produces:
 
 - reading time, word count, and frequent terms;
-- transparent readability and document-structure indicators;
+- an English readability indicator only for pages that explicitly declare English, with clear unavailable states otherwise, plus document-structure signals;
 - a provenance checklist covering visible bylines, dates, external source domains, and citation markup;
 - the page’s heading outline and linked source domains;
 - privacy-safe Markdown or JSON export and optional local history.
@@ -13,7 +13,7 @@ One explicit click produces:
 
 Source signals describe what the page exposes. They do **not** establish factuality, credibility, authority, or quality.
 
-Status: **1.3 release candidate for unpacked-extension evaluation.** Chrome Web Store publication and pilot adoption are not yet complete.
+Status: **1.4 release candidate for unpacked-extension evaluation.** Chrome Web Store publication and pilot adoption are not yet complete.
 
 ## Install and try it
 
@@ -31,6 +31,7 @@ Chrome blocks extensions from reading internal pages such as `chrome://extension
 
 - **Research triage:** inspect length, outline, byline/date metadata, and linked source domains before investing time in a page.
 - **Writing and editing:** gauge readability, structure, repeated terms, and whether provenance cues are visible to readers.
+- **Multilingual triage:** retain Unicode-aware word counts, frequent terms, structure, and source cues while avoiding a misleading English readability score when a page declares another language or no language.
 - **Source handoff:** export a consistent Markdown brief for notes, review, or collaboration without copying private query parameters.
 - **Source comparison:** save a baseline, analyze a second page, and compare length, structure, provenance cues, citations, shared source domains, and frequent terms locally.
 - **Private browsing workflow:** analyze intranet or sensitive pages locally, then choose explicitly whether to save a bounded brief.
@@ -59,7 +60,7 @@ npx playwright install chromium
 npm run check
 ```
 
-The complete gate runs manifest/privacy policy checks, eighteen deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, history reopening, and saved-baseline comparison.
+The complete gate runs manifest/privacy/workflow policy checks, twenty-two deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, history reopening, saved-baseline comparison, export, and declared non-English behavior.
 
 Individual commands:
 
@@ -70,7 +71,7 @@ npm run build
 npm run test:browser
 ```
 
-`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.3.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. Playwright, jsdom, and fflate are development-only dependencies and are not shipped.
+`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.4.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. Playwright, jsdom, and fflate are development-only dependencies and are not shipped.
 
 ### Architecture
 

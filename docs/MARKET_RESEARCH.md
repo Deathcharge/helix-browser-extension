@@ -49,6 +49,6 @@ Chrome’s own guidance recommends `activeTab` instead of broad host access wher
 1. Do source-triage users save/export briefs repeatedly, or is the one-click inspection enough?
 2. Which provenance cues matter by source type: news, academic, documentation, policy, or corporate pages?
 3. Does a two-source comparison view save enough time to justify added complexity?
-4. Is non-English demand better served by locale-specific deterministic analysis or by omitting readability where unsupported?
+4. **Decision implemented in 1.4:** use Unicode-aware word/term analysis on all pages and calculate the English readability score only when a page explicitly declares English. Non-English and undeclared-language pages show readability as unavailable. Locale-specific formulas remain a demand-driven future option.
 
 Claims above describe current public product pages and listings; they are competitive observations, not adoption or market-size evidence.

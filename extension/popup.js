@@ -17,12 +17,16 @@ function display(result) {
   $('reading-time').textContent = `${result.readingMinutes} min`;
   $('word-count').textContent = result.wordCount.toLocaleString();
   $('analyzed-at').textContent = new Date(result.analyzedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  ['readability', 'structure'].forEach(name => setScore(name, result.scores[name] ?? 0));
+  if (result.readabilityAvailable === false) { $('readability-score').textContent = 'Not available'; $('readability-bar').style.width = '0'; }
+  else setScore('readability', result.scores.readability ?? 0);
+  setScore('structure', result.scores.structure ?? 0);
   if (result.sourceSignalsAvailable === false) { $('provenance-score').textContent = 'Not analyzed'; $('provenance-bar').style.width = '0'; }
   else setScore('provenance', result.scores.provenance ?? 0);
   $('explanation').textContent = `${Number(counts.headings) || 0} headings · ${Number(counts.paragraphs) || 0} paragraphs · ${Number(counts.externalDomains) || 0} external domains · ${Number(counts.citations) || 0} citation signals`;
   $('byline').textContent = result.author || 'No byline detected';
   $('dates').textContent = `Published ${formatDate(result.publishedAt)} · Updated ${formatDate(result.modifiedAt)}`;
+  const readabilityNote = result.readabilityAvailable === false ? (result.readabilityBasis === 'unsupported-language' ? `Readability is unavailable because the page declares ${result.language || 'an unsupported language'}.` : (result.readabilityBasis === 'undeclared-language' ? 'Readability is unavailable because the page does not declare a language.' : 'Readability is unavailable for this saved brief.')) : '';
+  $('readability-note').textContent = readabilityNote; $('readability-note').classList.toggle('hidden', !readabilityNote);
   $('truncation-note').classList.toggle('hidden', !result.extraction?.truncated);
   $('migration-note').classList.toggle('hidden', result.sourceSignalsAvailable !== false);
   $('keywords').replaceChildren(...result.keywords.map(({ term, count }) => tag(`${term} ${count}`)));
@@ -74,7 +78,7 @@ async function save() {
   const history = await getHistory(); const next = [currentResult, ...history.filter(item => item.url !== currentResult.url)].slice(0, 25);
   await chrome.storage.local.set({ history: next }); $('save-btn').textContent = 'Saved'; setTimeout(() => { $('save-btn').textContent = 'Save locally'; }, 1200); await updateHistory();
 }
-function summary(result) { const sourceScore = result.sourceSignalsAvailable === false ? 'not analyzed' : `${result.scores.provenance}/100`; return `${result.title}\n${result.url}\n${result.wordCount} words · ${result.readingMinutes} min read\nReadability ${result.scores.readability}/100 · Structure ${result.scores.structure}/100 · Source signals ${sourceScore}\nGenerated locally by Samsarix Page Lens. Scores do not establish factuality or credibility.`; }
+function summary(result) { const readability = result.readabilityAvailable === false ? 'not available' : `${result.scores.readability}/100`; const sourceScore = result.sourceSignalsAvailable === false ? 'not analyzed' : `${result.scores.provenance}/100`; return `${result.title}\n${result.url}\n${result.wordCount} words · ${result.readingMinutes} min read\nReadability ${readability} · Structure ${result.scores.structure}/100 · Source signals ${sourceScore}\nGenerated locally by Samsarix Page Lens. Scores do not establish factuality or credibility.`; }
 async function copy() { await navigator.clipboard.writeText(summary(currentResult)); $('copy-btn').textContent = 'Copied'; setTimeout(() => { $('copy-btn').textContent = 'Copy summary'; }, 1200); }
 function download(contents, type, extension) {
   const blob = new Blob([contents], { type }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `samsarix-page-lens-${Date.now()}.${extension}`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 0);
@@ -100,7 +104,7 @@ function compare() {
   $('comparison-title').textContent = `${currentComparison.current.title} compared with ${currentComparison.baseline.title}`;
   const rows = [
     ['Words', signed(currentComparison.deltas.wordCount)], ['Reading time', signed(currentComparison.deltas.readingMinutes, ' min')],
-    ['Readability', signed(currentComparison.deltas.readability)], ['Structure', signed(currentComparison.deltas.structure)],
+    ['Readability', currentComparison.deltas.readability == null ? 'Not comparable' : signed(currentComparison.deltas.readability)], ['Structure', signed(currentComparison.deltas.structure)],
     ['Source signals', currentComparison.deltas.provenance == null ? 'Not comparable' : signed(currentComparison.deltas.provenance)],
     ['External domains', signed(currentComparison.deltas.externalDomains)], ['Citation signals', signed(currentComparison.deltas.citations)]
   ];

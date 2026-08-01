@@ -52,7 +52,7 @@ Baseline captured on Windows 11 with Node 24.12.0, npm 11.6.2, and Python 3.11.9
 ### P2
 
 - [x] Make the five most recent saved analyses directly reopenable from the popup.
-- [ ] Add locale-aware tokenization and language-specific readability models.
+- [x] Add Unicode-aware tokenization and suppress the English readability formula for declared non-English pages; add language-specific formulas only after demand validation.
 - [ ] Add a user-visible methodology drawer with per-score inputs.
 - [ ] Add Firefox support only after testing API differences and distribution demand.
 
@@ -111,7 +111,7 @@ Verification completed for 1.1.0 on Windows 11:
 
 Active-tab text is untrusted input but is treated only as text; result tags use `textContent`, not HTML. Extraction runs in an isolated extension script invocation, does not execute page strings, skips form/dialog/hidden content, caps input, and has no network sink. Local history may still contain a title, URL, and 280-character excerpt from sensitive intranet pages; users are told storage is local and can clear it. Chrome local storage is not encrypted storage, so saving is explicit rather than automatic.
 
-Heuristic scores can be misunderstood. UI and documentation state their limits, and raw structural counts accompany them. Very large pages are bounded. SPAs can change after analysis; rerunning produces a fresh result. Only English-oriented readability/tokenization is currently supported well. Operating cost is effectively zero beyond store fees and maintenance because there is no hosted service, model, database, telemetry, or third-party API.
+Heuristic scores can be misunderstood. UI and documentation state their limits, and raw structural counts accompany them. Very large pages are bounded. SPAs can change after analysis; rerunning produces a fresh result. Word and frequent-term tokenization retain Unicode letters and numbers, while readability remains explicitly English-only and unavailable for declared non-English pages. Operating cost is effectively zero beyond store fees and maintenance because there is no hosted service, model, database, telemetry, or third-party API.
 
 ## Distribution and sustainability
 
@@ -170,4 +170,19 @@ Local release evidence for 1.3:
 ### CI runtime maintenance
 
 After the 1.3 merge, GitHub reported that `actions/checkout@v4` and `actions/setup-node@v4` target the retired Node 20 action runtime. The workflow now uses SHA-pinned checkout v6.0.2 and setup-node v6.4.0 on Node.js 24; checkout credentials are not persisted because verification never performs authenticated Git writes. The documented development baseline and package engine match that supported runtime.
+
+## Samsarix 1.4 language-honesty pass
+
+- Tokenization now retains Unicode letters and numbers so non-English word counts and frequent terms remain useful.
+- The Flesch-style English readability score is produced only for pages that explicitly declare English.
+- Undeclared-language and declared non-English pages show a specific unavailable reason while retaining structure and source triage.
+- Comparison and Markdown/copy export propagate `Not comparable` or `Not available` instead of converting missing readability to zero.
+- Stored schema-v2 records are normalized on read so previously saved, declared non-English briefs lose misleading English readability values without discarding their other signals.
+
+Local release evidence for 1.4:
+
+- `npm run check`: passed workflow/privacy/manifest policy, 22 unit tests, artifact build, and the packaged English/comparison/non-English Chromium journey.
+- `npm audit`: 0 vulnerabilities.
+- Two independent builds produced the same `dist/samsarix-page-lens-1.4.0.zip` SHA-256: `0273E37C23421D2C87D84E45351179FCD99D2DD7227DB92CC04DA247DF3BF82D`.
+- PR, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.
 - Hosted privacy URL, final screenshots, store account, signed upload, and bounded pilot feedback.
