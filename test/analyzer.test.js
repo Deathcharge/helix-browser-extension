@@ -144,6 +144,7 @@ test('Markdown export includes an escaped private review when present', () => {
   const markdown = toMarkdown(result);
   assert.match(markdown, /## Private review/);
   assert.match(markdown, /Decision: Keep as reference/);
+  assert.ok(markdown.includes('Useful \\[context\\]\\(https://evil\\.example\\)'));
   assert.doesNotMatch(markdown, /\[context\]\(https:\/\/evil\.example\)/);
   assert.doesNotMatch(toMarkdown(analyzePage(sample)), /## Private review/);
 });

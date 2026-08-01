@@ -20,10 +20,12 @@ function populateReview(reviewValue) {
 }
 function applyReviewInputs() {
   if (!currentResult) return;
+  const existing = SamsarixAnalyzer.normalizeReview(currentResult.review);
+  const review = SamsarixAnalyzer.normalizeReview({ decision: $('review-decision').value, note: $('review-note').value });
+  const changed = review.decision !== existing.decision || review.note !== existing.note;
   currentResult.review = SamsarixAnalyzer.normalizeReview({
-    decision: $('review-decision').value,
-    note: $('review-note').value,
-    updatedAt: new Date().toISOString()
+    ...review,
+    updatedAt: changed ? new Date().toISOString() : existing.updatedAt
   });
   $('review-note-count').textContent = `${$('review-note').value.length}/500`;
 }

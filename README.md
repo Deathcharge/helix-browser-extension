@@ -50,7 +50,7 @@ Chrome shares `chrome.storage.local` between regular and Incognito extension con
 
 Extraction visits at most 15,000 DOM nodes and retains at most 250,000 characters. It excludes content inside scripts, styles, navigation, footers, forms, dialogs, templates, and elements explicitly marked hidden or `aria-hidden`. It does not inspect form values. CSS-only visibility cannot be inferred without substantially more page work, so the privacy disclosure does not claim that all CSS-hidden text is excluded.
 
-Saved and exported page/source URLs have credentials, queries, and fragments removed. A saved brief retains only structured counts, signals, keywords, metadata, a 280-character excerpt, and an optional user-entered review note capped at 500 characters. See [docs/PRIVACY.md](docs/PRIVACY.md).
+Saved and exported page/source URLs have credentials, queries, and fragments removed. A saved brief retains only structured counts, signals, keywords, metadata, a 280-character excerpt, and an optional user-entered review decision and note, with the note capped at 500 characters. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
 Comparisons are calculated on demand from two briefs already in the popup and are not stored automatically. Comparison Markdown contains sanitized URLs and descriptive deltas; it does not rank either page as more truthful or credible.
 

@@ -81,6 +81,9 @@ async function screenshotPopup(page, file) {
     }
     await popup.getByRole('button', { name: 'Open saved brief: Research Signals' }).click(); await popup.getByText('Source signals').first().waitFor();
     if (await popup.locator('#review-decision').inputValue() !== 'read-deeper' || await popup.locator('#review-note').inputValue() !== 'Verify the primary source before citing.') throw new Error('Saved review did not reopen');
+    const reviewTimestamp = await popup.evaluate(() => currentResult.review.updatedAt);
+    await popup.evaluate(() => applyReviewInputs());
+    if (await popup.evaluate(() => currentResult.review.updatedAt) !== reviewTimestamp) throw new Error('Unchanged review input rewrote its edit timestamp');
     checkpoint('Browser smoke: saved review reopened.');
     await context.route('https://example.test/informe', route => route.fulfill({
       contentType: 'text/html; charset=utf-8',
