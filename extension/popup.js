@@ -12,13 +12,14 @@ function renderList(container, items, emptyText, factory) {
 }
 function display(result) {
   currentResult = result;
+  const counts = result.counts && typeof result.counts === 'object' ? result.counts : {};
   $('reading-time').textContent = `${result.readingMinutes} min`;
   $('word-count').textContent = result.wordCount.toLocaleString();
   $('analyzed-at').textContent = new Date(result.analyzedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   ['readability', 'structure'].forEach(name => setScore(name, result.scores[name] ?? 0));
   if (result.sourceSignalsAvailable === false) { $('provenance-score').textContent = 'Not analyzed'; $('provenance-bar').style.width = '0'; }
   else setScore('provenance', result.scores.provenance ?? 0);
-  $('explanation').textContent = `${result.counts.headings} headings · ${result.counts.paragraphs} paragraphs · ${result.counts.externalDomains || 0} external domains · ${result.counts.citations} citation signals`;
+  $('explanation').textContent = `${Number(counts.headings) || 0} headings · ${Number(counts.paragraphs) || 0} paragraphs · ${Number(counts.externalDomains) || 0} external domains · ${Number(counts.citations) || 0} citation signals`;
   $('byline').textContent = result.author || 'No byline detected';
   $('dates').textContent = `Published ${formatDate(result.publishedAt)} · Updated ${formatDate(result.modifiedAt)}`;
   $('truncation-note').classList.toggle('hidden', !result.extraction?.truncated);
@@ -81,6 +82,6 @@ async function initialize() {
   $('page-title').textContent = currentTab?.title || 'Current page'; $('page-url').textContent = SamsarixAnalyzer.sanitizeUrl(currentTab?.url || ''); $('analyze-btn').disabled = !/^https?:/i.test(currentTab?.url || ''); await updateHistory();
 }
 $('analyze-btn').addEventListener('click', analyze); $('retry-btn').addEventListener('click', analyze); $('copy-btn').addEventListener('click', () => copy().catch(fail));
-$('json-btn').addEventListener('click', exportJson); $('markdown-btn').addEventListener('click', exportMarkdown); $('save-btn').addEventListener('click', () => save().catch(fail));
+$('json-btn').addEventListener('click', () => { try { exportJson(); } catch (error) { fail(error); } }); $('markdown-btn').addEventListener('click', () => { try { exportMarkdown(); } catch (error) { fail(error); } }); $('save-btn').addEventListener('click', () => save().catch(fail));
 $('clear-history-btn').addEventListener('click', async () => { if (!confirm('Clear all saved briefs?')) return; try { await chrome.storage.local.remove('history'); await updateHistory(); } catch (error) { fail(error); } });
 document.addEventListener('DOMContentLoaded', () => initialize().catch(fail));

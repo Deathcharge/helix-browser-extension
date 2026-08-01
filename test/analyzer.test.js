@@ -41,6 +41,20 @@ test('Markdown export contains limitations and sanitized sources', () => {
   const markdown = toMarkdown(analyzePage(sample));
   assert.match(markdown, /Source signals:/); assert.match(markdown, /source\.example/); assert.doesNotMatch(markdown, /campaign=/); assert.match(markdown, /not factuality/);
 });
+test('Markdown export escapes page-derived control characters', () => {
+  const result = analyzePage({
+    ...sample,
+    title: 'Bad ![image](https://evil.example/x)',
+    author: '[click](https://evil.example)',
+    sources: [{ url: 'https://actual.example/report?secret=x', label: '![track](https://evil.example/pixel)' }]
+  });
+  const markdown = toMarkdown(result);
+  assert.doesNotMatch(markdown, /!\[image\]\(https:\/\/evil\.example/);
+  assert.doesNotMatch(markdown, /\[click\]\(https:\/\/evil\.example/);
+  assert.doesNotMatch(markdown, /!\[track\]\(https:\/\/evil\.example/);
+  assert.match(markdown, /\(https:\/\/actual\.example\/report\)/);
+  assert.doesNotMatch(markdown, /secret=/);
+});
 test('caps retained excerpt and marks bounded extraction', () => {
   const result = analyzePage({ ...sample, text: 'word '.repeat(100), truncated: true });
   assert.ok(result.excerpt.length <= 280); assert.equal(result.extraction.truncated, true);

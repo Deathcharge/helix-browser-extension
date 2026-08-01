@@ -44,6 +44,9 @@
     })
       .filter(source => source.host && source.url && !seen.has(source.host) && seen.add(source.host)).slice(0, 20);
   }
+  function escapeMarkdown(value) {
+    return String(value ?? '').replace(/([\\`*_{}\[\]()<>#+\-.!|])/g, '\\$1').replace(/\r?\n/g, ' ');
+  }
   function analyzePage(snapshot) {
     const text = String(snapshot.text || '').replace(/\s+/g, ' ').trim();
     const tokens = words(text);
@@ -82,10 +85,10 @@
     };
   }
   function toMarkdown(result) {
-    const sourceLines = result.sources?.length ? result.sources.map(source => `- [${source.host}](${source.url})${source.label ? ` — ${source.label}` : ''}`).join('\n') : '- None detected';
-    const signalLines = result.provenanceSignals?.map(signal => `- ${signal.present ? '✓' : '○'} ${signal.label}: ${signal.detail}`).join('\n') || '';
+    const sourceLines = result.sources?.length ? result.sources.map(source => `- [${escapeMarkdown(source.host)}](${sanitizeUrl(source.url)})${source.label ? ` — ${escapeMarkdown(source.label)}` : ''}`).join('\n') : '- None detected';
+    const signalLines = result.provenanceSignals?.map(signal => `- ${signal.present ? '✓' : '○'} ${escapeMarkdown(signal.label)}: ${escapeMarkdown(signal.detail)}`).join('\n') || '';
     const sourceScore = result.sourceSignalsAvailable === false ? 'Not analyzed' : `${result.scores.provenance}/100`;
-    return `# ${result.title}\n\n${result.url ? `Source: ${result.url}\n\n` : ''}Analyzed locally: ${result.analyzedAt}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${result.scores.readability}/100\n- Structure: ${result.scores.structure}/100\n- Source signals: ${sourceScore}\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${item.term}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
+    return `# ${escapeMarkdown(result.title)}\n\n${result.url ? `Source: ${sanitizeUrl(result.url)}\n\n` : ''}Analyzed locally: ${escapeMarkdown(result.analyzedAt)}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${result.scores.readability}/100\n- Structure: ${result.scores.structure}/100\n- Source signals: ${sourceScore}\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${escapeMarkdown(item.term)}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
   }
   function migrateStoredResult(item) {
     if (!item || typeof item !== 'object' || ![1, 2].includes(item.schemaVersion) || typeof item.title !== 'string' || !Number.isFinite(item.wordCount)) return null;
@@ -119,5 +122,5 @@
       methodology: legacy ? 'Legacy brief migrated with private URL components removed. Reanalyze the page to collect source signals.' : String(item.methodology || '').slice(0, 300)
     };
   }
-  return { analyzePage, migrateStoredResult, sanitizeUrl, syllables, toMarkdown, topKeywords };
+  return { analyzePage, escapeMarkdown, migrateStoredResult, sanitizeUrl, syllables, toMarkdown, topKeywords };
 });

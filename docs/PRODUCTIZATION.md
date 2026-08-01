@@ -139,9 +139,9 @@ Completed locally:
 Local release-candidate verification:
 
 - `npm run lint`: passed manifest/version/permission/no-network policy and JavaScript syntax checks.
-- `npm test`: 11 passed, 0 failed/skipped/cancelled, including legacy-history privacy migration.
+- `npm test`: 15 passed, 0 failed/skipped/cancelled, including legacy-history privacy migration, Markdown injection resistance, and exact extractor bounds.
 - `npm run build`: produced the unpacked artifact and `dist/samsarix-page-lens-1.2.0.zip`.
-- Two independent builds after the migration hardening produced the same ZIP SHA-256: `D54B7891818BEBCF71230808445D38EF973FF01998D90D833C78429176E31963`.
+- Two independent builds after review hardening produced the same ZIP SHA-256: `DB5840ED68F2978E3DF20B5A70FC9E2FC03AA2D8D1C85893B4EE2222C7CF531C`.
 - `npm run test:browser`: passed against Playwright Chromium with the built extension loaded.
 - `npm audit`: 0 vulnerabilities after upgrading Playwright to the fixed 1.62.1 release.
 

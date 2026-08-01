@@ -5,7 +5,7 @@ Thanks for improving the extension. Changes should preserve its local-first, exp
 ## Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/samsarix-page-lens.git
+git clone https://github.com/Deathcharge/samsarix-page-lens.git
 cd samsarix-page-lens
 npm ci
 npm run check

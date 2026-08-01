@@ -13,7 +13,7 @@ Current disposition: productization is merged. Version 1.2 develops the private 
 
 - Keep the default branch buildable from a clean checkout and preserve exact-head CI evidence.
 - Keep Samsarix LLC branding, package identity, license metadata, and compatibility aliases internally consistent.
-- Preserve the pre-productization default under a rollback ref before merging; do not delete legacy history.
+- [x] Preserve the pre-productization default as rollback tag `pre-productization-20260728`; do not delete legacy history.
 - [x] Publish visible heuristic limits in the popup.
 - [x] Bound DOM extraction by text-node and character count.
 - [x] Sanitize stored/exported URLs by removing credentials, query, and fragment data.

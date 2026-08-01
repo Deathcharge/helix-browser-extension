@@ -41,6 +41,8 @@ Analysis runs entirely in the extension. There are no runtime network requests, 
 - `scripting` runs one bounded extraction after the user selects **Create page brief**.
 - `storage` retains up to 25 briefs only when the user selects **Save locally**.
 
+Chrome shares `chrome.storage.local` between regular and Incognito extension contexts. If the extension is enabled in Incognito, selecting **Save locally** there adds the brief to the same persistent history visible in regular browsing. Do not save an Incognito brief unless that retention is intended.
+
 Extraction visits at most 15,000 DOM nodes and retains at most 250,000 characters. It excludes content inside scripts, styles, navigation, footers, forms, dialogs, templates, and elements explicitly marked hidden or `aria-hidden`. It does not inspect form values. CSS-only visibility cannot be inferred without substantially more page work, so the privacy disclosure does not claim that all CSS-hidden text is excluded.
 
 Saved and exported page/source URLs have credentials, queries, and fragments removed. A saved brief retains only structured counts, signals, keywords, metadata, and a 280-character excerpt. See [docs/PRIVACY.md](docs/PRIVACY.md).
@@ -53,7 +55,7 @@ npx playwright install chromium
 npm run check
 ```
 
-The complete gate runs manifest/privacy policy checks, eleven deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, and history reopening.
+The complete gate runs manifest/privacy policy checks, fifteen deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, and history reopening.
 
 Individual commands:
 

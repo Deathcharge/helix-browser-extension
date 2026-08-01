@@ -12,7 +12,8 @@ const manifest = JSON.parse(await readFile(new URL('manifest.json', output), 'ut
 await writeFile(new URL('BUILD_INFO.json', output), JSON.stringify({ name: manifest.name, version: manifest.version, reproducible: true }, null, 2) + '\n');
 async function collectFiles(directory, prefix = '') {
   const files = {};
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
+  const entries = (await readdir(directory, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name, 'en'));
+  for (const entry of entries) {
     const url = new URL(entry.name + (entry.isDirectory() ? '/' : ''), directory);
     if (entry.isDirectory()) Object.assign(files, await collectFiles(url, `${prefix}${entry.name}/`));
     else files[`${prefix}${entry.name}`] = new Uint8Array(await readFile(url));

@@ -44,8 +44,16 @@ const { extractPage } = require('../extension/extractor.js');
     await popup.screenshot({ path: path.resolve('output/playwright/samsarix-page-lens-1.2.png'), fullPage: true });
     console.log(`Browser smoke passed for extension ${extensionId}.`);
   } finally {
-    await Promise.race([context.close(), new Promise(resolve => setTimeout(resolve, 5000))]);
-    try { fs.rmSync(profile, { recursive: true, force: true }); } catch {}
+    let closed = false;
+    try {
+      closed = await Promise.race([context.close().then(() => true), new Promise(resolve => setTimeout(() => resolve(false), 10000))]);
+      if (!closed) {
+        const browser = context.browser();
+        if (browser) await browser.close().catch(() => {});
+        closed = true;
+      }
+    } finally {
+      if (closed) try { fs.rmSync(profile, { recursive: true, force: true }); } catch {}
+    }
   }
-  process.exit(0);
 })().catch(error => { console.error(error); process.exit(1); });
