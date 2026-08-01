@@ -7,7 +7,7 @@ This roadmap separates four gates: merge, release, publication, and flagship ado
 Portfolio role: **integration or extension**. Keep its platform-specific packaging and release lifecycle separate. Any flagship integration should use a documented HTTP, event, or package contract with explicit auth, privacy, and failure ownership.
 Planned repository identity: `Deathcharge/samsarix-page-lens` (ready).
 
-Current disposition: productization is merged. Version 1.2 develops the private source-triage wedge; public release and adoption remain separate decisions.
+Current disposition: productization is merged. Version 1.3 develops the private source-triage wedge with saved-baseline comparison; public release and adoption remain separate decisions.
 
 ## Stabilize the productized default
 
@@ -19,6 +19,7 @@ Current disposition: productization is merged. Version 1.2 develops the private 
 - [x] Sanitize stored/exported URLs by removing credentials, query, and fragment data.
 - [x] Commit installed-extension Chromium coverage for extraction, analysis, rendering, save, and history.
 - [x] Produce and reproduce a deterministic unsigned store ZIP locally.
+- [x] Add an on-device current-versus-saved comparison with descriptive, non-ranking deltas and portable Markdown.
 - Review priority: inspect and sign the exact store artifact under the owner-controlled store account.
 
 ## Release candidate

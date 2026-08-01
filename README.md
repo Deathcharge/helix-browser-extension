@@ -9,10 +9,11 @@ One explicit click produces:
 - a provenance checklist covering visible bylines, dates, external source domains, and citation markup;
 - the page’s heading outline and linked source domains;
 - privacy-safe Markdown or JSON export and optional local history.
+- an on-device comparison between the current brief and any saved baseline, with descriptive deltas and shared signals.
 
 Source signals describe what the page exposes. They do **not** establish factuality, credibility, authority, or quality.
 
-Status: **1.2 release candidate for unpacked-extension evaluation.** Chrome Web Store publication and pilot adoption are not yet complete.
+Status: **1.3 release candidate for unpacked-extension evaluation.** Chrome Web Store publication and pilot adoption are not yet complete.
 
 ## Install and try it
 
@@ -31,6 +32,7 @@ Chrome blocks extensions from reading internal pages such as `chrome://extension
 - **Research triage:** inspect length, outline, byline/date metadata, and linked source domains before investing time in a page.
 - **Writing and editing:** gauge readability, structure, repeated terms, and whether provenance cues are visible to readers.
 - **Source handoff:** export a consistent Markdown brief for notes, review, or collaboration without copying private query parameters.
+- **Source comparison:** save a baseline, analyze a second page, and compare length, structure, provenance cues, citations, shared source domains, and frequent terms locally.
 - **Private browsing workflow:** analyze intranet or sensitive pages locally, then choose explicitly whether to save a bounded brief.
 
 ## Privacy and permissions
@@ -47,6 +49,8 @@ Extraction visits at most 15,000 DOM nodes and retains at most 250,000 character
 
 Saved and exported page/source URLs have credentials, queries, and fragments removed. A saved brief retains only structured counts, signals, keywords, metadata, and a 280-character excerpt. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
+Comparisons are calculated on demand from two briefs already in the popup and are not stored automatically. Comparison Markdown contains sanitized URLs and descriptive deltas; it does not rank either page as more truthful or credible.
+
 ## Development and verification
 
 ```bash
@@ -55,7 +59,7 @@ npx playwright install chromium
 npm run check
 ```
 
-The complete gate runs manifest/privacy policy checks, fifteen deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, and history reopening.
+The complete gate runs manifest/privacy policy checks, eighteen deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, history reopening, and saved-baseline comparison.
 
 Individual commands:
 
@@ -66,12 +70,12 @@ npm run build
 npm run test:browser
 ```
 
-`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.2.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. Playwright and fflate are development-only dependencies and are not shipped.
+`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.3.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. Playwright, jsdom, and fflate are development-only dependencies and are not shipped.
 
 ### Architecture
 
 - `extension/extractor.js` performs bounded, on-demand DOM extraction.
-- `extension/analyzer.js` validates and transforms the snapshot into a schema-v2 source brief.
+- `extension/analyzer.js` validates and transforms snapshots into schema-v2 source briefs and creates descriptive two-brief comparisons.
 - `extension/popup.js` owns the UI, export, sanitized local history, and recovery states.
 - `scripts/check.mjs` protects the minimal permission and no-network boundary.
 - `scripts/browser-smoke.cjs` loads the built extension in Chromium and exercises the primary packaged flow.
