@@ -20,6 +20,8 @@ Before storage or export, URL credentials, query parameters, and fragments are r
 
 History is deduplicated by sanitized page URL, restricted to schema-v2 records, and capped at 25 briefs. Users can clear all saved briefs from the popup. Chrome extension storage is device-local application storage, not encrypted secure storage; sensitive briefs should not be saved on shared or compromised devices.
 
+On upgrade from version 1.1, legacy saved records are rewritten as schema-v2 records with URL credentials, queries, and fragments removed. Legacy reading and structure metrics are preserved, while unavailable source signals are marked for reanalysis.
+
 Markdown and JSON export occur only after an explicit user action. The browser’s normal download behavior controls the resulting file.
 
 ## Permissions

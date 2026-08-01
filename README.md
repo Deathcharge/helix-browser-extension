@@ -53,7 +53,7 @@ npx playwright install chromium
 npm run check
 ```
 
-The complete gate runs manifest/privacy policy checks, ten deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, and history reopening.
+The complete gate runs manifest/privacy policy checks, eleven deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, and history reopening.
 
 Individual commands:
 

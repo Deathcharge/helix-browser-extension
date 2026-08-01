@@ -15,11 +15,14 @@ function display(result) {
   $('reading-time').textContent = `${result.readingMinutes} min`;
   $('word-count').textContent = result.wordCount.toLocaleString();
   $('analyzed-at').textContent = new Date(result.analyzedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  ['readability', 'structure', 'provenance'].forEach(name => setScore(name, result.scores[name] ?? 0));
+  ['readability', 'structure'].forEach(name => setScore(name, result.scores[name] ?? 0));
+  if (result.sourceSignalsAvailable === false) { $('provenance-score').textContent = 'Not analyzed'; $('provenance-bar').style.width = '0'; }
+  else setScore('provenance', result.scores.provenance ?? 0);
   $('explanation').textContent = `${result.counts.headings} headings · ${result.counts.paragraphs} paragraphs · ${result.counts.externalDomains || 0} external domains · ${result.counts.citations} citation signals`;
   $('byline').textContent = result.author || 'No byline detected';
   $('dates').textContent = `Published ${formatDate(result.publishedAt)} · Updated ${formatDate(result.modifiedAt)}`;
   $('truncation-note').classList.toggle('hidden', !result.extraction?.truncated);
+  $('migration-note').classList.toggle('hidden', result.sourceSignalsAvailable !== false);
   $('keywords').replaceChildren(...result.keywords.map(({ term, count }) => tag(`${term} ${count}`)));
   renderList($('signal-list'), result.provenanceSignals || [], 'No source signals detected', signal => {
     const item = document.createElement('li'); item.className = signal.present ? 'signal-present' : 'signal-missing';
@@ -43,10 +46,12 @@ async function analyze() {
     display(SamsarixAnalyzer.analyzePage(snapshot));
   } catch (error) { fail(error); } finally { $('analyze-btn').disabled = false; }
 }
-function isStoredResult(item) { return item && item.schemaVersion === 2 && typeof item.title === 'string' && typeof item.url === 'string' && Number.isFinite(item.wordCount) && Number.isFinite(item.scores?.provenance) && Array.isArray(item.keywords) && Array.isArray(item.provenanceSignals); }
 async function getHistory() {
   const stored = await chrome.storage.local.get({ history: [] });
-  return Array.isArray(stored.history) ? stored.history.filter(isStoredResult).slice(0, 25) : [];
+  const original = Array.isArray(stored.history) ? stored.history : [];
+  const history = original.map(SamsarixAnalyzer.migrateStoredResult).filter(Boolean).slice(0, 25);
+  if (JSON.stringify(history) !== JSON.stringify(original)) await chrome.storage.local.set({ history });
+  return history;
 }
 async function updateHistory() {
   const history = await getHistory();
@@ -64,7 +69,7 @@ async function save() {
   const history = await getHistory(); const next = [currentResult, ...history.filter(item => item.url !== currentResult.url)].slice(0, 25);
   await chrome.storage.local.set({ history: next }); $('save-btn').textContent = 'Saved'; setTimeout(() => { $('save-btn').textContent = 'Save locally'; }, 1200); await updateHistory();
 }
-function summary(result) { return `${result.title}\n${result.url}\n${result.wordCount} words · ${result.readingMinutes} min read\nReadability ${result.scores.readability}/100 · Structure ${result.scores.structure}/100 · Source signals ${result.scores.provenance}/100\nGenerated locally by Samsarix Page Lens. Scores do not establish factuality or credibility.`; }
+function summary(result) { const sourceScore = result.sourceSignalsAvailable === false ? 'not analyzed' : `${result.scores.provenance}/100`; return `${result.title}\n${result.url}\n${result.wordCount} words · ${result.readingMinutes} min read\nReadability ${result.scores.readability}/100 · Structure ${result.scores.structure}/100 · Source signals ${sourceScore}\nGenerated locally by Samsarix Page Lens. Scores do not establish factuality or credibility.`; }
 async function copy() { await navigator.clipboard.writeText(summary(currentResult)); $('copy-btn').textContent = 'Copied'; setTimeout(() => { $('copy-btn').textContent = 'Copy summary'; }, 1200); }
 function download(contents, type, extension) {
   const blob = new Blob([contents], { type }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `samsarix-page-lens-${Date.now()}.${extension}`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 0);

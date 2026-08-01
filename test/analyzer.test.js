@@ -2,7 +2,7 @@
 // Copyright 2026 Samsarix LLC
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { analyzePage, sanitizeUrl, toMarkdown, topKeywords } = require('../extension/analyzer.js');
+const { analyzePage, migrateStoredResult, sanitizeUrl, toMarkdown, topKeywords } = require('../extension/analyzer.js');
 
 const sample = {
   url: 'https://example.com/report?token=secret#private', title: 'Example report', description: 'A useful report', language: 'en', author: 'Research Team',
@@ -44,4 +44,8 @@ test('Markdown export contains limitations and sanitized sources', () => {
 test('caps retained excerpt and marks bounded extraction', () => {
   const result = analyzePage({ ...sample, text: 'word '.repeat(100), truncated: true });
   assert.ok(result.excerpt.length <= 280); assert.equal(result.extraction.truncated, true);
+});
+test('migrates legacy history and removes private URL data', () => {
+  const legacy = migrateStoredResult({ schemaVersion: 1, url: 'https://example.com/report?token=secret#private', title: ' Legacy ', wordCount: 50, scores: { readability: 80, structure: 70, evidence: 90 }, counts: { headings: 2 }, keywords: [{ term: 'test', count: 2 }], excerpt: 'preview' });
+  assert.equal(legacy.url, 'https://example.com/report'); assert.equal(legacy.sourceSignalsAvailable, false); assert.equal(legacy.scores.provenance, null); assert.deepEqual(legacy.sources, []);
 });

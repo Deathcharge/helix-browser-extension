@@ -77,13 +77,47 @@
       scores: { readability: clamp(flesch), structure, provenance }, counts: { sentences: sentenceCount, headings, paragraphs, links, citations, externalDomains: sources.length },
       keywords: topKeywords(tokens), outline: (Array.isArray(snapshot.outline) ? snapshot.outline : []).map(item => String(item).replace(/\s+/g, ' ').trim().slice(0, 160)).filter(Boolean).slice(0, 12),
       sources, provenanceSignals, excerpt: text.slice(0, 280), extraction: { visitedNodes: Math.max(0, Number(snapshot.visitedNodes) || 0), truncated: Boolean(snapshot.truncated) },
+      sourceSignalsAvailable: true,
       methodology: 'Transparent local heuristics. Source signals describe visible provenance metadata and links; they do not establish truth, credibility, or quality.'
     };
   }
   function toMarkdown(result) {
     const sourceLines = result.sources?.length ? result.sources.map(source => `- [${source.host}](${source.url})${source.label ? ` — ${source.label}` : ''}`).join('\n') : '- None detected';
     const signalLines = result.provenanceSignals?.map(signal => `- ${signal.present ? '✓' : '○'} ${signal.label}: ${signal.detail}`).join('\n') || '';
-    return `# ${result.title}\n\n${result.url ? `Source: ${result.url}\n\n` : ''}Analyzed locally: ${result.analyzedAt}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${result.scores.readability}/100\n- Structure: ${result.scores.structure}/100\n- Source signals: ${result.scores.provenance}/100\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${item.term}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
+    const sourceScore = result.sourceSignalsAvailable === false ? 'Not analyzed' : `${result.scores.provenance}/100`;
+    return `# ${result.title}\n\n${result.url ? `Source: ${result.url}\n\n` : ''}Analyzed locally: ${result.analyzedAt}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${result.scores.readability}/100\n- Structure: ${result.scores.structure}/100\n- Source signals: ${sourceScore}\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${item.term}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
   }
-  return { analyzePage, sanitizeUrl, syllables, toMarkdown, topKeywords };
+  function migrateStoredResult(item) {
+    if (!item || typeof item !== 'object' || ![1, 2].includes(item.schemaVersion) || typeof item.title !== 'string' || !Number.isFinite(item.wordCount)) return null;
+    const legacy = item.schemaVersion === 1;
+    const sources = normalizeSources(item.sources);
+    const signals = legacy ? [] : (Array.isArray(item.provenanceSignals) ? item.provenanceSignals : []).slice(0, 5).map(signal => ({
+      label: String(signal?.label || '').slice(0, 80), present: Boolean(signal?.present), detail: String(signal?.detail || '').slice(0, 160)
+    })).filter(signal => signal.label);
+    return {
+      schemaVersion: 2, url: sanitizeUrl(item.url), title: item.title.replace(/\s+/g, ' ').trim().slice(0, 300) || 'Untitled page',
+      description: String(item.description || '').replace(/\s+/g, ' ').trim().slice(0, 300), language: String(item.language || '').slice(0, 20), author: String(item.author || '').replace(/\s+/g, ' ').trim().slice(0, 160),
+      publishedAt: validDate(item.publishedAt), modifiedAt: validDate(item.modifiedAt), analyzedAt: validDate(item.analyzedAt) || new Date(0).toISOString(),
+      wordCount: Math.min(10000000, Math.max(0, Number(item.wordCount) || 0)), readingMinutes: Math.min(100000, Math.max(1, Number(item.readingMinutes) || Math.ceil(item.wordCount / 225))),
+      scores: {
+        readability: clamp(Number(item.scores?.readability) || 0),
+        structure: clamp(Number(item.scores?.structure) || 0),
+        provenance: legacy ? null : clamp(Number(item.scores?.provenance) || 0)
+      },
+      counts: {
+        sentences: Math.max(0, Number(item.counts?.sentences) || 0), headings: Math.max(0, Number(item.counts?.headings) || 0),
+        paragraphs: Math.max(0, Number(item.counts?.paragraphs) || 0), links: Math.max(0, Number(item.counts?.links) || 0),
+        citations: Math.max(0, Number(item.counts?.citations) || 0), externalDomains: legacy ? 0 : sources.length
+      },
+      keywords: (Array.isArray(item.keywords) ? item.keywords : []).slice(0, 6).map(keyword => ({ term: String(keyword?.term || '').slice(0, 80), count: Math.max(0, Number(keyword?.count) || 0) })).filter(keyword => keyword.term),
+      outline: legacy ? [] : (Array.isArray(item.outline) ? item.outline : []).slice(0, 12).map(value => String(value).slice(0, 160)),
+      sources: legacy ? [] : sources,
+      provenanceSignals: signals,
+      sourceSignalsAvailable: !legacy,
+      excerpt: String(item.excerpt || '').slice(0, 280),
+      extraction: { visitedNodes: Math.max(0, Number(item.extraction?.visitedNodes) || 0), truncated: Boolean(item.extraction?.truncated) },
+      methodology: legacy ? 'Legacy brief migrated with private URL components removed. Reanalyze the page to collect source signals.' : String(item.methodology || '').slice(0, 300)
+    };
+  }
+  return { analyzePage, migrateStoredResult, sanitizeUrl, syllables, toMarkdown, topKeywords };
 });
