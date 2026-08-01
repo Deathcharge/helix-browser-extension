@@ -4,7 +4,7 @@
 
 **Name:** Samsarix Page Lens
 
-**Short description:** Inspect a page’s reading effort, structure, and evidence signals privately in your browser.
+**Short description:** Create a private source-triage brief with reading, structure, and provenance signals.
 
 **Category:** Productivity
 
@@ -12,16 +12,16 @@
 
 **Detailed description:**
 
-Samsarix Page Lens helps researchers, writers, and readers quickly understand the shape of the page in front of them. With one explicit click, it calculates estimated reading time, word count, frequent terms, readability, structural organization, and evidence signals.
+Samsarix Page Lens helps researchers, writers, journalists, students, and analysts decide whether a webpage deserves deeper reading. With one explicit click, it creates an on-device brief with estimated reading time, frequent terms, readability, document structure, visible byline/date metadata, citation markup, heading outline, and external source domains.
 
 Analysis stays in the browser. There are no accounts, analytics, ads, remote AI services, or page-content uploads. Results can be copied, exported as JSON, or saved locally for later reference.
 
-Readability is a sentence-and-syllable estimate. Structure reflects headings and paragraphs. Evidence reflects links and citation-like markup; it is not a fact check or quality judgment.
+Readability is an English-oriented sentence-and-syllable estimate. Structure reflects headings and paragraphs. Source signals report visible provenance metadata and links; they are not a fact check, credibility rating, or quality judgment. Saved and exported URLs have credentials, queries, and fragments removed.
 
 ## Permission justifications
 
 - `activeTab`: needed to inspect only the page where the user explicitly invokes the extension.
-- `scripting`: needed to run the bounded, one-time extraction function in that active tab.
+- `scripting`: needed to run the bounded, one-time extraction function in that active tab after explicit user action.
 - `storage`: needed to save analyses only when the user requests it.
 
 No host permissions are requested.
@@ -34,9 +34,9 @@ No host permissions are requested.
 - [ ] Host the privacy disclosure at a stable public HTTPS URL and use that URL in the listing.
 - [ ] Confirm `support@samsarix.com` is monitored.
 - [ ] Complete Chrome Web Store developer registration and identity verification.
-- [ ] Load and manually test the exact `dist/samsarix-page-lens` artifact before upload.
+- [ ] Load and manually test the exact `dist/samsarix-page-lens` artifact, then upload the matching versioned ZIP.
 - [ ] Upload the packaged build, complete data-use declarations, and submit for review.
 
 ## Data-use declaration basis
 
-The current source performs no network requests and includes no analytics or advertising SDK. Page content is processed ephemerally on-device. User-requested history is stored locally. Store declarations must be revalidated against the exact submission artifact and current Chrome Web Store questionnaire.
+The current runtime performs no network requests and includes no analytics or advertising SDK. Page content is processed ephemerally on-device. User-requested schema-v2 briefs are stored locally, capped at 25, and removable. Store declarations must be revalidated against the exact submission artifact and current Chrome Web Store questionnaire.

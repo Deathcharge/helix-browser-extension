@@ -5,13 +5,13 @@ Thanks for improving the extension. Changes should preserve its local-first, exp
 ## Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/helix-browser-extension.git
-cd helix-browser-extension
+git clone https://github.com/YOUR_USERNAME/samsarix-page-lens.git
+cd samsarix-page-lens
 npm ci
 npm run check
 ```
 
-Load `helix_browser_extension/helix-browser-extension` from `chrome://extensions` for development, or run `npm run build` and smoke-test `dist/samsarix-page-lens` as the release artifact.
+Load `extension` from `chrome://extensions` for development, or run `npm run build` and smoke-test `dist/samsarix-page-lens` as the release artifact.
 
 ## Standards
 

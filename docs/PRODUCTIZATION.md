@@ -122,3 +122,31 @@ The simplest path is a free Chrome Web Store utility with no account. Sustainabi
 1. **Legal review (recommended, not a code blocker):** counsel should confirm Samsarix LLC’s chain of title, contributor treatment, and any trademark strategy. MPL-2.0 is now applied consistently, but licensing cannot establish ownership of third-party contributions or register a brand.
 2. **Chrome Web Store:** owner must provide developer registration, listing assets, hosted privacy URL, region choices, signing, and submission. Verify with an installed store build matching the locally tested manifest version.
 3. **Manual browser matrix:** a human must verify visual layout and browser-specific injection behavior in supported Chrome versions before store release unless automated installed-extension coverage is completed below.
+
+## Samsarix 1.2 competitive pass
+
+Chosen wedge: a private, transparent source-triage brief for researchers, writers, journalists, students, and analysts. Competitive research is recorded in `docs/MARKET_RESEARCH.md`. AI chat, remote summaries, SEO certification, and opaque credibility claims remain out of scope.
+
+Completed locally:
+
+- Schema-v2 briefs with sanitized page/source URLs, visible provenance metadata, external source domains, heading outline, and explicit methodology limits.
+- Bounded extraction: at most 15,000 DOM nodes and 250,000 characters, with truncation surfaced in the result.
+- Markdown and JSON export plus strict schema-v2 local-history validation.
+- Canonical `extension/` source directory.
+- Committed Playwright Chromium test covering the built artifact, DOM extraction, form exclusion, metadata/source detection, URL sanitization, popup rendering, local save, and history reopening.
+- Version advanced to 1.2.0; exact final verification, artifact digest, commits, CI result, and merge evidence will be recorded at release handoff.
+
+Local release-candidate verification:
+
+- `npm run lint`: passed manifest/version/permission/no-network policy and JavaScript syntax checks.
+- `npm test`: 10 passed, 0 failed/skipped/cancelled.
+- `npm run build`: produced the unpacked artifact and `dist/samsarix-page-lens-1.2.0.zip`.
+- Two independent builds produced the same ZIP SHA-256: `DCD8C81025654188827CF3E91DD2D9D0C426739FD44FDCF22C8C99065BD680EE`.
+- `npm run test:browser`: passed against Playwright Chromium with the built extension loaded.
+- `npm audit`: 0 vulnerabilities after upgrading Playwright to the fixed 1.62.1 release.
+
+Remaining release gates:
+
+- Manual toolbar invocation on representative public and internal pages to exercise Chrome’s real `activeTab` gesture.
+- Manual clipboard and download confirmation behavior on supported Chrome versions.
+- Hosted privacy URL, final screenshots, store account, signed upload, and bounded pilot feedback.
