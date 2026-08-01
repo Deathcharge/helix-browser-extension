@@ -193,7 +193,14 @@ Local release evidence for 1.4:
 - `site/privacy/index.html` is a standalone, no-script disclosure matching the extension’s current processing, storage, Incognito, language, comparison, permission, and contact behavior.
 - `.github/workflows/privacy-pages.yml` uses immutable action SHAs, disables checkout credential persistence, and deploys only through explicit `workflow_dispatch`; it does not silently publish on a push.
 - Static policy checks enforce action pinning, manual-only publication, key disclosure claims, and exactly three 1280×800 PNG assets.
-- Enabling Pages, running the workflow, verifying the public HTTPS URL, and submitting the store package remain owner-controlled external actions.
+- Store-account registration, signing, submission, and owner approval remain external actions.
+
+Publication evidence:
+
+- GitHub Pages is public with workflow-based deployment and enforced HTTPS at `https://deathcharge.github.io/samsarix-page-lens/`.
+- Manual deployment run `30723382130` published from `main` commit `5aeb4f01f5662520ac30c13fb1d0ebb87e0d24b9` on August 1, 2026.
+- The live response matched `site/privacy/index.html` byte-for-byte at SHA-256 `8720D325FA04EDAD635E6395121648A5ECB8B4A88E854C3AC41F1407982DD98E` and exposed the correct title, no-telemetry statement, 1.6 import limits, and support address.
+- Future manual deployments run `scripts/verify-live-privacy.mjs` after `deploy-pages` and fail if the public bytes do not match the committed disclosure.
 
 ## Samsarix 1.5 private research queue
 

@@ -32,7 +32,7 @@ No host permissions are requested.
 - [x] Generate and visually review three 1280×800 screenshots in `store-assets/` from the packaged 1.6 browser journey.
 - [ ] Provide a 440×280 promotional tile if desired.
 - [x] Prepare the standalone disclosure at `site/privacy/index.html` and a SHA-pinned, owner-triggered GitHub Pages workflow.
-- [ ] Enable GitHub Pages, manually run **Publish privacy disclosure**, verify the reported HTTPS URL, and use it in the listing.
+- [x] Publish and byte-verify the disclosure at `https://deathcharge.github.io/samsarix-page-lens/` with HTTPS enforcement; use this URL in the listing.
 - [ ] Confirm `support@samsarix.com` is monitored.
 - [ ] Complete Chrome Web Store developer registration and identity verification.
 - [ ] Load and manually test the exact `dist/samsarix-page-lens` artifact, then upload the matching versioned ZIP.

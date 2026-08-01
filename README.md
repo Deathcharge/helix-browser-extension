@@ -94,7 +94,7 @@ npm run test:browser
 - [Chrome Web Store release packet](docs/STORE_LISTING.md)
 - [Roadmap](ROADMAP.md)
 - [Chrome Web Store screenshots](store-assets/README.md)
-- [Hostable privacy disclosure](site/privacy/index.html)
+- [Public privacy disclosure](https://deathcharge.github.io/samsarix-page-lens/) and its [repository source](site/privacy/index.html)
 
 ## Support, ownership, and license
 

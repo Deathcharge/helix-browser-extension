@@ -31,7 +31,7 @@ Current disposition: productization is merged. Version 1.6 develops the private 
 Current hardening backlog:
 
 - Popup/Chrome integration, extraction, sanitization, history, and the exact built artifact are covered by committed Chromium smoke testing. Manual toolbar `activeTab` behavior and clipboard/download prompts remain release gates.
-- Store screenshots and a hostable privacy disclosure are prepared and policy-checked. Pages enablement/publication, store account/signing/submission, and adoption evidence remain owner-controlled.
+- Store screenshots are prepared and policy-checked. The privacy disclosure is published over enforced HTTPS and verified against its repository source after deployment. Store account/signing/submission and adoption evidence remain owner-controlled.
 - [x] Use Unicode-aware word/term tokenization; calculate the English readability formula only for pages that explicitly declare English, and show an unavailable reason for non-English or undeclared language.
 - [x] Turn triage into an actionable local queue with bounded private notes, explicit review decisions, filtering, migration, and portable export.
 - [x] Add a versioned, bounded queue backup/import contract and whole-queue Markdown handoff without introducing an account, network request, or sync permission.
