@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Samsarix Page Lens",
-  "version": "1.1.0",
-  "description": "Inspect a page's reading effort, structure, and evidence signals locally in your browser.",
+  "version": "1.2.0",
+  "description": "Create a private source-triage brief for HTTP(S) webpages—reading effort, structure, and provenance signals.",
   "homepage_url": "https://samsarix.com",
   "permissions": ["activeTab", "scripting", "storage"],
   "action": {

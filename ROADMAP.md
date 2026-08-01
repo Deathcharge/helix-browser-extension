@@ -7,18 +7,19 @@ This roadmap separates four gates: merge, release, publication, and flagship ado
 Portfolio role: **integration or extension**. Keep its platform-specific packaging and release lifecycle separate. Any flagship integration should use a documented HTTP, event, or package contract with explicit auth, privacy, and failure ownership.
 Planned repository identity: `Deathcharge/samsarix-page-lens` (ready).
 
-Current disposition: Merge the productization branch after exact-head verification and rollback-ref creation; release and adoption remain separate decisions.
+Current disposition: productization is merged. Version 1.2 develops the private source-triage wedge; public release and adoption remain separate decisions.
 
 ## Stabilize the productized default
 
 - Keep the default branch buildable from a clean checkout and preserve exact-head CI evidence.
 - Keep Samsarix LLC branding, package identity, license metadata, and compatibility aliases internally consistent.
-- Preserve the pre-productization default under a rollback ref before merging; do not delete legacy history.
-- Review priority: Publish visible heuristic limits.
-- Review priority: bound DOM extraction.
-- Review priority: decide URL retention.
-- Review priority: commit Chrome integration tests.
-- Review priority: reproduce and review the signed/store artifact.
+- [x] Preserve the pre-productization default as rollback tag `pre-productization-20260728`; do not delete legacy history.
+- [x] Publish visible heuristic limits in the popup.
+- [x] Bound DOM extraction by text-node and character count.
+- [x] Sanitize stored/exported URLs by removing credentials, query, and fragment data.
+- [x] Commit installed-extension Chromium coverage for extraction, analysis, rendering, save, and history.
+- [x] Produce and reproduce a deterministic unsigned store ZIP locally.
+- Review priority: inspect and sign the exact store artifact under the owner-controlled store account.
 
 ## Release candidate
 
@@ -28,12 +29,12 @@ Current disposition: Merge the productization branch after exact-head verificati
 
 Current hardening backlog:
 
-- Popup/Chrome integration, extraction behavior, history, clipboard/export, and exact built artifact are not covered by the committed suite; manual toolbar `activeTab` behavior remains a release gate.
+- Popup/Chrome integration, extraction, sanitization, history, and the exact built artifact are covered by committed Chromium smoke testing. Manual toolbar `activeTab` behavior and clipboard/download prompts remain release gates.
 - No store account, screenshots, hosted privacy disclosure, signed submission, or adoption evidence.
-- English-oriented tokenization/readability and crude “evidence”/structure heuristics can be misunderstood; the popup itself lacks the not-a-fact-check/methodology disclosure.
-- DOM work is not bounded by node count before cloning, and privacy copy overstates exclusion of CSS-hidden content.
-- Saved full URLs can preserve sensitive query/fragment data; history schema validation is shallow.
-- Stale repository/directory naming obscures the current product.
+- English-oriented tokenization/readability remains a limitation; unsupported-language behavior needs an explicit product decision.
+- Provenance cues vary by page type and need pilot feedback before weighting is treated as stable.
+- CSS-only hidden content is not detected; privacy copy now states this precisely.
+- [x] Rename the extracted source directory to the canonical `extension/` path.
 - Browser policy/API changes create recurring review and store-maintenance work.
 
 ## Samsarix adoption

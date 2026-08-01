@@ -5,7 +5,7 @@ import { extname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const root = new URL('../helix_browser_extension/helix-browser-extension/', import.meta.url);
+const root = new URL('../extension/', import.meta.url);
 const names = await readdir(root);
 const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));

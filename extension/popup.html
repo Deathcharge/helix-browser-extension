@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- Copyright 2026 Samsarix LLC -->
+<html lang="en">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Samsarix Page Lens</title><link rel="stylesheet" href="popup.css"></head>
+  <body>
+    <main class="popup-container">
+      <header class="header"><div class="logo"><span aria-hidden="true">◎</span><span>Samsarix Page Lens</span></div><span class="local-badge">On-device</span></header>
+      <section class="content" aria-labelledby="page-title">
+        <div class="page-info"><h1 id="page-title" class="page-title">Current page</h1><div id="page-url" class="page-url"></div></div>
+        <p class="privacy-note">Create a private source-triage brief. Page content stays in this browser.</p>
+        <button id="analyze-btn" class="analyze-btn" type="button">Create page brief</button>
+        <div id="loading" class="loading hidden" role="status">Reading visible page structure…</div>
+        <div id="error" class="error hidden" role="alert"><strong>Couldn’t analyze this page</strong><p id="error-message"></p><button id="retry-btn" class="retry-btn" type="button">Try again</button></div>
+        <section id="results" class="results hidden" aria-live="polite">
+          <div class="summary-row"><div><span class="eyebrow">Reading time</span><strong id="reading-time">—</strong></div><div><span class="eyebrow">Words</span><strong id="word-count">—</strong></div><div><span class="eyebrow">Analyzed</span><strong id="analyzed-at">—</strong></div></div>
+          <div class="metrics-grid">
+            <div class="metric"><span>Readability</span><strong id="readability-score">—</strong><div class="metric-bar"><i id="readability-bar"></i></div></div>
+            <div class="metric"><span>Structure</span><strong id="structure-score">—</strong><div class="metric-bar"><i id="structure-bar"></i></div></div>
+            <div class="metric"><span>Source signals</span><strong id="provenance-score">—</strong><div class="metric-bar"><i id="provenance-bar"></i></div></div>
+          </div>
+          <p id="explanation" class="explanation"></p><p id="byline" class="byline"></p><p id="dates" class="dates"></p><p id="truncation-note" class="notice hidden">Large page: analysis used the first bounded portion.</p><p id="migration-note" class="notice hidden">Saved before source-signal analysis. Reanalyze this page for a current provenance checklist.</p>
+          <details open><summary>Provenance checklist</summary><ul id="signal-list" class="signal-list"></ul></details>
+          <details><summary>External source domains</summary><ul id="source-list" class="compact-list"></ul></details>
+          <details><summary>Page outline</summary><ol id="outline-list" class="compact-list"></ol></details>
+          <div id="keywords" class="keywords" aria-label="Frequent terms"></div>
+          <p class="methodology">These are transparent page signals—not a fact check, credibility rating, or quality judgment.</p>
+          <div class="actions"><button id="copy-btn" class="action-btn" type="button">Copy</button><button id="markdown-btn" class="action-btn" type="button">Markdown</button><button id="json-btn" class="action-btn" type="button">JSON</button><button id="save-btn" class="action-btn" type="button">Save locally</button></div>
+        </section>
+        <section id="history-section" class="history-section hidden" aria-labelledby="history-heading"><h2 id="history-heading">Recent saved briefs</h2><div id="history-list" class="history-list"></div></section>
+      </section>
+      <footer class="footer"><span id="history-count">No saved briefs</span><span><a href="mailto:support@samsarix.com">Support</a><button id="clear-history-btn" class="link-btn hidden" type="button">Clear</button></span></footer>
+    </main>
+    <script src="analyzer.js"></script><script src="extractor.js"></script><script src="popup.js"></script>
+  </body>
+</html>

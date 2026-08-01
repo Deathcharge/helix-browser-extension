@@ -1,72 +1,92 @@
 # Samsarix Page Lens
 
-Samsarix Page Lens is a local-first Chrome extension that turns the active webpage into a compact reading and structure brief. It is for researchers, writers, and curious readers who want fast orientation without uploading page content or creating an account.
+Samsarix Page Lens creates a private source-triage brief for the webpage in front of you. It helps researchers, writers, journalists, students, and analysts decide whether a source deserves deeper reading—without uploading page content, creating an account, or trusting an opaque AI summary.
 
-The extension reports estimated reading time, word count, frequent terms, and three transparent heuristic signals:
+One explicit click produces:
 
-- **Readability** uses a Flesch-style estimate based on sentence and syllable length.
-- **Structure** reflects the presence of headings and paragraphs.
-- **Evidence** reflects links and citation-like markup. It does **not** verify truth or source quality.
+- reading time, word count, and frequent terms;
+- transparent readability and document-structure indicators;
+- a provenance checklist covering visible bylines, dates, external source domains, and citation markup;
+- the page’s heading outline and linked source domains;
+- privacy-safe Markdown or JSON export and optional local history.
 
-Status: credible local-first MVP, ready for unpacked-extension evaluation. Chrome Web Store publication is not yet complete.
+Source signals describe what the page exposes. They do **not** establish factuality, credibility, authority, or quality.
+
+Status: **1.2 release candidate for unpacked-extension evaluation.** Chrome Web Store publication and pilot adoption are not yet complete.
 
 ## Install and try it
 
-Prerequisites: Chrome or Chromium with Manifest V3 support. Node.js 20+ is only needed for development.
+Prerequisites: Chrome or Chromium with Manifest V3 support. Node.js 20+ is needed only for development.
 
 1. Clone or download this repository.
 2. Open `chrome://extensions`.
 3. Enable **Developer mode**.
-4. Choose **Load unpacked** and select `helix_browser_extension/helix-browser-extension`.
-5. Open a normal HTTP or HTTPS article, select the extension icon, and choose **Analyze this page**.
+4. Choose **Load unpacked** and select `extension`.
+5. Open a normal HTTP or HTTPS article, select the extension icon, and choose **Create page brief**.
 
 Chrome blocks extensions from reading internal pages such as `chrome://extensions` and the Chrome Web Store. The popup explains this when encountered.
 
-Results can be copied, exported as JSON, or saved locally. Saved analyses are deduplicated by URL, capped at 25, visible in the recent-history list, and removable from the popup.
+## Real use cases
+
+- **Research triage:** inspect length, outline, byline/date metadata, and linked source domains before investing time in a page.
+- **Writing and editing:** gauge readability, structure, repeated terms, and whether provenance cues are visible to readers.
+- **Source handoff:** export a consistent Markdown brief for notes, review, or collaboration without copying private query parameters.
+- **Private browsing workflow:** analyze intranet or sensitive pages locally, then choose explicitly whether to save a bounded brief.
 
 ## Privacy and permissions
 
-Analysis runs entirely in the extension. There are no network requests, accounts, analytics, or remote dependencies.
+Analysis runs entirely in the extension. There are no runtime network requests, accounts, analytics, advertising, or remote dependencies.
 
-- `activeTab`: grants temporary access only to the tab where the user invokes the extension.
-- `scripting`: extracts visible text and structural counts after the user chooses **Analyze**.
-- `storage`: stores up to 25 user-requested analysis records on the device.
+- `activeTab` grants temporary access only to the tab where the user invokes the extension.
+- `scripting` runs one bounded extraction after the user selects **Create page brief**.
+- `storage` retains up to 25 briefs only when the user selects **Save locally**.
 
-The extension removes scripts, styles, navigation, footers, forms, hidden elements, and dialogs from its temporary page clone before reading text. It processes at most 250,000 characters and saves only a 280-character excerpt. Passwords and form values are not read. See the complete [privacy disclosure](docs/PRIVACY.md).
+Chrome shares `chrome.storage.local` between regular and Incognito extension contexts. If the extension is enabled in Incognito, selecting **Save locally** there adds the brief to the same persistent history visible in regular browsing. Do not save an Incognito brief unless that retention is intended.
 
-## Development
+Extraction visits at most 15,000 DOM nodes and retains at most 250,000 characters. It excludes content inside scripts, styles, navigation, footers, forms, dialogs, templates, and elements explicitly marked hidden or `aria-hidden`. It does not inspect form values. CSS-only visibility cannot be inferred without substantially more page work, so the privacy disclosure does not claim that all CSS-hidden text is excluded.
+
+Saved and exported page/source URLs have credentials, queries, and fragments removed. A saved brief retains only structured counts, signals, keywords, metadata, and a 280-character excerpt. See [docs/PRIVACY.md](docs/PRIVACY.md).
+
+## Development and verification
 
 ```bash
 npm ci
-npm run lint
-npm test
-npm run build
+npx playwright install chromium
 npm run check
 ```
 
-`npm run build` creates a clean unpacked artifact in `dist/samsarix-page-lens`. No dependency installation is currently required beyond Node itself, but `npm ci` validates the lockfile and keeps CI reproducible.
+The complete gate runs manifest/privacy policy checks, fifteen deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, and history reopening.
+
+Individual commands:
+
+```bash
+npm run lint
+npm test
+npm run build
+npm run test:browser
+```
+
+`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.2.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. Playwright and fflate are development-only dependencies and are not shipped.
 
 ### Architecture
 
-- `manifest.json` declares the minimal browser surface.
-- `popup.js` owns the user journey, active-tab extraction, local history, copy, and export.
-- `analyzer.js` is a side-effect-free analysis module shared by the popup and Node tests.
-- `test/` checks the scoring contract, edge cases, release metadata, and permission boundary.
+- `extension/extractor.js` performs bounded, on-demand DOM extraction.
+- `extension/analyzer.js` validates and transforms the snapshot into a schema-v2 source brief.
+- `extension/popup.js` owns the UI, export, sanitized local history, and recovery states.
+- `scripts/check.mjs` protects the minimal permission and no-network boundary.
+- `scripts/browser-smoke.cjs` loads the built extension in Chromium and exercises the primary packaged flow.
 
-The analysis is deliberately heuristic and deterministic. It must not be presented as an AI judgment, accessibility audit, fact check, or substitute for editorial review.
+## Product and release context
 
-## Packaging and release
+- [Competitive research and product wedge](docs/MARKET_RESEARCH.md)
+- [Productization and acceptance record](docs/PRODUCTIZATION.md)
+- [Chrome Web Store release packet](docs/STORE_LISTING.md)
+- [Roadmap](ROADMAP.md)
 
-Run `npm run check`, then load `dist/samsarix-page-lens` as an unpacked extension for smoke testing. The artifact includes its license, copyright notice, and source location. Store submission still requires a developer account, screenshots, privacy declarations, signing, and review. Draft copy and the release checklist are in [docs/STORE_LISTING.md](docs/STORE_LISTING.md) and [docs/PRODUCTIZATION.md](docs/PRODUCTIZATION.md).
-
-## Support and contributing
+## Support, ownership, and license
 
 - Product contact: [contact@samsarix.com](mailto:contact@samsarix.com)
-- Support: [support@samsarix.com](mailto:support@samsarix.com)
-- Contributions: see [CONTRIBUTING.md](CONTRIBUTING.md)
+- Support and private security reports: [support@samsarix.com](mailto:support@samsarix.com)
+- Contributions: [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## License and ownership
-
-Copyright © 2026 Samsarix LLC. Source code is licensed under the [Mozilla Public License 2.0](LICENSE). MPL-2.0 permits use and distribution while requiring distributed modifications to MPL-covered files to remain available under MPL. See [NOTICE](NOTICE) for ownership and source information.
-
-The code license does not grant rights to Samsarix names, brands, trademarks, service marks, or logos beyond what is necessary to comply with license notices. See the [licensing decision](docs/LICENSING.md). This summary is informational; the license text controls.
+Copyright © 2026 Samsarix LLC. Source code is licensed under [MPL-2.0](LICENSE); see [NOTICE](NOTICE) and the [licensing decision](docs/LICENSING.md). The code license does not grant general rights to Samsarix names, brands, marks, or logos.
