@@ -29,9 +29,10 @@ No host permissions are requested.
 ## Owner-provided assets and actions
 
 - [ ] Confirm Samsarix LLC owns or has permission to use the product name and supplied icon artwork.
-- [ ] Provide a 1280×800 or 640×400 store screenshot showing a representative analysis.
+- [x] Generate and visually review three 1280×800 screenshots in `store-assets/` from the packaged 1.4 browser journey.
 - [ ] Provide a 440×280 promotional tile if desired.
-- [ ] Host the privacy disclosure at a stable public HTTPS URL and use that URL in the listing.
+- [x] Prepare the standalone disclosure at `site/privacy/index.html` and a SHA-pinned, owner-triggered GitHub Pages workflow.
+- [ ] Enable GitHub Pages, manually run **Publish privacy disclosure**, verify the reported HTTPS URL, and use it in the listing.
 - [ ] Confirm `support@samsarix.com` is monitored.
 - [ ] Complete Chrome Web Store developer registration and identity verification.
 - [ ] Load and manually test the exact `dist/samsarix-page-lens` artifact, then upload the matching versioned ZIP.

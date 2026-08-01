@@ -31,7 +31,7 @@ Current disposition: productization is merged. Version 1.4 develops the private 
 Current hardening backlog:
 
 - Popup/Chrome integration, extraction, sanitization, history, and the exact built artifact are covered by committed Chromium smoke testing. Manual toolbar `activeTab` behavior and clipboard/download prompts remain release gates.
-- No store account, screenshots, hosted privacy disclosure, signed submission, or adoption evidence.
+- Store screenshots and a hostable privacy disclosure are prepared and policy-checked. Pages enablement/publication, store account/signing/submission, and adoption evidence remain owner-controlled.
 - [x] Use Unicode-aware word/term tokenization; calculate the English readability formula only for pages that explicitly declare English, and show an unavailable reason for non-English or undeclared language.
 - Provenance cues vary by page type and need pilot feedback before weighting is treated as stable.
 - CSS-only hidden content is not detected; privacy copy now states this precisely.
