@@ -2,6 +2,7 @@
 // Copyright 2026 Samsarix LLC
 const $ = id => document.getElementById(id);
 let currentTab = null; let currentResult = null;
+let savedHistory = []; let comparisonCandidates = []; let currentComparison = null;
 
 function show(name) { ['loading', 'error', 'results'].forEach(id => $(id).classList.toggle('hidden', id !== name)); }
 function setScore(name, value) { $(`${name}-score`).textContent = `${value}/100`; $(`${name}-bar`).style.width = `${value}%`; }
@@ -33,6 +34,7 @@ function display(result) {
     const item = document.createElement('li'); const link = document.createElement('a'); link.href = source.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = source.host; item.append(link); return item;
   });
   renderList($('outline-list'), result.outline || [], 'No heading outline detected', heading => { const item = document.createElement('li'); item.textContent = heading; return item; });
+  updateComparisonOptions();
   show('results');
 }
 function fail(error) {
@@ -56,6 +58,7 @@ async function getHistory() {
 }
 async function updateHistory() {
   const history = await getHistory();
+  savedHistory = history;
   $('history-count').textContent = history.length ? `${history.length} saved ${history.length === 1 ? 'brief' : 'briefs'}` : 'No saved briefs';
   $('clear-history-btn').classList.toggle('hidden', history.length === 0);
   $('history-list').replaceChildren(...history.slice(0, 5).map(item => {
@@ -64,6 +67,7 @@ async function updateHistory() {
     button.append(title, meta); button.addEventListener('click', () => display(item)); return button;
   }));
   $('history-section').classList.toggle('hidden', history.length === 0);
+  updateComparisonOptions();
 }
 async function save() {
   if (!currentResult) return;
@@ -77,11 +81,45 @@ function download(contents, type, extension) {
 }
 function exportJson() { download(JSON.stringify(currentResult, null, 2), 'application/json', 'json'); }
 function exportMarkdown() { download(SamsarixAnalyzer.toMarkdown(currentResult), 'text/markdown', 'md'); }
+function updateComparisonOptions() {
+  currentComparison = null; $('comparison-output').classList.add('hidden');
+  comparisonCandidates = savedHistory.filter(item => currentResult && (item.url !== currentResult.url || item.analyzedAt !== currentResult.analyzedAt));
+  const select = $('compare-select'); const previous = select.value;
+  select.replaceChildren(...comparisonCandidates.map((item, index) => {
+    const option = document.createElement('option'); option.value = String(index); option.textContent = item.title; return option;
+  }));
+  if (previous !== '' && comparisonCandidates[Number(previous)]) select.value = previous;
+  else if (comparisonCandidates.length) select.selectedIndex = 0;
+  $('compare-section').classList.toggle('hidden', !currentResult || comparisonCandidates.length === 0);
+}
+function signed(value, suffix = '') { return `${value > 0 ? '+' : ''}${value}${suffix}`; }
+function compare() {
+  const baseline = comparisonCandidates[Number($('compare-select').value)];
+  if (!currentResult || !baseline) throw new Error('Choose a saved baseline before comparing.');
+  currentComparison = SamsarixAnalyzer.compareBriefs(currentResult, baseline);
+  $('comparison-title').textContent = `${currentComparison.current.title} compared with ${currentComparison.baseline.title}`;
+  const rows = [
+    ['Words', signed(currentComparison.deltas.wordCount)], ['Reading time', signed(currentComparison.deltas.readingMinutes, ' min')],
+    ['Readability', signed(currentComparison.deltas.readability)], ['Structure', signed(currentComparison.deltas.structure)],
+    ['Source signals', currentComparison.deltas.provenance == null ? 'Not comparable' : signed(currentComparison.deltas.provenance)],
+    ['External domains', signed(currentComparison.deltas.externalDomains)], ['Citation signals', signed(currentComparison.deltas.citations)]
+  ];
+  $('comparison-deltas').replaceChildren(...rows.map(([label, value]) => {
+    const row = document.createElement('div'); const term = document.createElement('dt'); const detail = document.createElement('dd'); term.textContent = label; detail.textContent = value; row.append(term, detail); return row;
+  }));
+  const domains = currentComparison.sharedSourceDomains.length; const terms = currentComparison.sharedKeywords.length;
+  $('comparison-overlap').textContent = `${domains} shared source ${domains === 1 ? 'domain' : 'domains'} · ${terms} shared frequent ${terms === 1 ? 'term' : 'terms'}`;
+  $('comparison-output').classList.remove('hidden');
+}
+async function copyComparison() { await navigator.clipboard.writeText(SamsarixAnalyzer.toComparisonMarkdown(currentComparison)); $('copy-comparison-btn').textContent = 'Copied'; setTimeout(() => { $('copy-comparison-btn').textContent = 'Copy comparison'; }, 1200); }
+function exportComparisonMarkdown() { download(SamsarixAnalyzer.toComparisonMarkdown(currentComparison), 'text/markdown', 'comparison.md'); }
 async function initialize() {
   [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   $('page-title').textContent = currentTab?.title || 'Current page'; $('page-url').textContent = SamsarixAnalyzer.sanitizeUrl(currentTab?.url || ''); $('analyze-btn').disabled = !/^https?:/i.test(currentTab?.url || ''); await updateHistory();
 }
 $('analyze-btn').addEventListener('click', analyze); $('retry-btn').addEventListener('click', analyze); $('copy-btn').addEventListener('click', () => copy().catch(fail));
 $('json-btn').addEventListener('click', () => { try { exportJson(); } catch (error) { fail(error); } }); $('markdown-btn').addEventListener('click', () => { try { exportMarkdown(); } catch (error) { fail(error); } }); $('save-btn').addEventListener('click', () => save().catch(fail));
+$('compare-btn').addEventListener('click', () => { try { compare(); } catch (error) { fail(error); } }); $('copy-comparison-btn').addEventListener('click', () => copyComparison().catch(fail)); $('markdown-comparison-btn').addEventListener('click', () => { try { exportComparisonMarkdown(); } catch (error) { fail(error); } });
+$('compare-select').addEventListener('change', () => { currentComparison = null; $('comparison-output').classList.add('hidden'); });
 $('clear-history-btn').addEventListener('click', async () => { if (!confirm('Clear all saved briefs?')) return; try { await chrome.storage.local.remove('history'); await updateHistory(); } catch (error) { fail(error); } });
 document.addEventListener('DOMContentLoaded', () => initialize().catch(fail));

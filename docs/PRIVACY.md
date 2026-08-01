@@ -26,6 +26,8 @@ On upgrade from version 1.1, legacy saved records are rewritten as schema-v2 rec
 
 Markdown and JSON export occur only after an explicit user action. The browser’s normal download behavior controls the resulting file.
 
+Two-brief comparisons are computed locally and on demand from the current brief and a user-selected saved baseline. Comparisons are not added to history automatically. Copying or exporting a comparison is explicit, uses sanitized page URLs, and is then controlled by the system clipboard or browser download behavior.
+
 ## Permissions
 
 - `activeTab` provides temporary access only to the tab where the user invokes the extension.

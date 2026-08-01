@@ -26,6 +26,17 @@
           <div id="keywords" class="keywords" aria-label="Frequent terms"></div>
           <p class="methodology">These are transparent page signals—not a fact check, credibility rating, or quality judgment.</p>
           <div class="actions"><button id="copy-btn" class="action-btn" type="button">Copy</button><button id="markdown-btn" class="action-btn" type="button">Markdown</button><button id="json-btn" class="action-btn" type="button">JSON</button><button id="save-btn" class="action-btn" type="button">Save locally</button></div>
+          <section id="compare-section" class="compare-section hidden" aria-labelledby="compare-heading">
+            <h2 id="compare-heading">Compare with a saved brief</h2>
+            <div class="compare-controls"><label class="sr-only" for="compare-select">Saved baseline</label><select id="compare-select"></select><button id="compare-btn" class="action-btn" type="button">Compare</button></div>
+            <div id="comparison-output" class="comparison-output hidden" aria-live="polite">
+              <p id="comparison-title" class="comparison-title"></p>
+              <dl id="comparison-deltas" class="comparison-deltas"></dl>
+              <p id="comparison-overlap" class="comparison-overlap"></p>
+              <p class="methodology">Differences are descriptive—not a winner, credibility score, or quality judgment.</p>
+              <div class="actions"><button id="copy-comparison-btn" class="action-btn" type="button">Copy comparison</button><button id="markdown-comparison-btn" class="action-btn" type="button">Comparison Markdown</button></div>
+            </div>
+          </section>
         </section>
         <section id="history-section" class="history-section hidden" aria-labelledby="history-heading"><h2 id="history-heading">Recent saved briefs</h2><div id="history-list" class="history-list"></div></section>
       </section>

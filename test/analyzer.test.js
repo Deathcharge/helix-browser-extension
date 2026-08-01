@@ -2,7 +2,7 @@
 // Copyright 2026 Samsarix LLC
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { analyzePage, migrateStoredResult, sanitizeUrl, toMarkdown, topKeywords } = require('../extension/analyzer.js');
+const { analyzePage, compareBriefs, migrateStoredResult, sanitizeUrl, toComparisonMarkdown, toMarkdown, topKeywords } = require('../extension/analyzer.js');
 
 const sample = {
   url: 'https://example.com/report?token=secret#private', title: 'Example report', description: 'A useful report', language: 'en', author: 'Research Team',
@@ -62,4 +62,37 @@ test('caps retained excerpt and marks bounded extraction', () => {
 test('migrates legacy history and removes private URL data', () => {
   const legacy = migrateStoredResult({ schemaVersion: 1, url: 'https://example.com/report?token=secret#private', title: ' Legacy ', wordCount: 50, scores: { readability: 80, structure: 70, evidence: 90 }, counts: { headings: 2 }, keywords: [{ term: 'test', count: 2 }], excerpt: 'preview' });
   assert.equal(legacy.url, 'https://example.com/report'); assert.equal(legacy.sourceSignalsAvailable, false); assert.equal(legacy.scores.provenance, null); assert.deepEqual(legacy.sources, []);
+  const repeated = migrateStoredResult(legacy);
+  assert.equal(repeated.sourceSignalsAvailable, false); assert.equal(repeated.scores.provenance, null);
+});
+test('compares two briefs with descriptive deltas and overlap', () => {
+  const baseline = analyzePage(sample);
+  const current = analyzePage({
+    ...sample,
+    url: 'https://current.example/article?private=yes', title: 'Current article', headings: 5, citations: 4,
+    sources: [{ url: 'https://source.example/new', label: 'Shared' }, { url: 'https://another.example/report', label: 'Another' }],
+    text: `${sample.text} additional analysis context appears here. `.repeat(2)
+  });
+  const comparison = compareBriefs(current, baseline);
+  assert.equal(comparison.current.url, 'https://current.example/article');
+  assert.ok(comparison.deltas.wordCount > 0);
+  assert.equal(comparison.deltas.externalDomains, 1);
+  assert.deepEqual(comparison.sharedSourceDomains, ['source.example']);
+  assert.ok(comparison.sharedKeywords.includes('clear'));
+  assert.match(comparison.methodology, /do not establish factuality/);
+});
+test('comparison Markdown escapes titles and only links sanitized URLs', () => {
+  const baseline = analyzePage({ ...sample, title: 'Base [link](https://evil.example)', url: 'https://base.example/a?token=x' });
+  const current = analyzePage({ ...sample, title: 'Current ![image](https://evil.example/x)', url: 'https://current.example/b#secret' });
+  const markdown = toComparisonMarkdown(compareBriefs(current, baseline));
+  assert.doesNotMatch(markdown, /!\[image\]\(https:\/\/evil\.example/);
+  assert.doesNotMatch(markdown, /\[link\]\(https:\/\/evil\.example/);
+  assert.match(markdown, /\(https:\/\/base\.example\/a\)/);
+  assert.match(markdown, /\(https:\/\/current\.example\/b\)/);
+  assert.doesNotMatch(markdown, /token=|#secret/);
+});
+test('comparison marks unavailable legacy source signals as not comparable', () => {
+  const current = analyzePage(sample);
+  const legacy = migrateStoredResult({ schemaVersion: 1, url: 'https://legacy.example', title: 'Legacy', wordCount: 50, scores: { readability: 50, structure: 50 }, counts: {}, keywords: [] });
+  assert.equal(compareBriefs(current, legacy).deltas.provenance, null);
 });

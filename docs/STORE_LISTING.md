@@ -12,9 +12,9 @@
 
 **Detailed description:**
 
-Samsarix Page Lens helps researchers, writers, journalists, students, and analysts decide whether a webpage deserves deeper reading. With one explicit click, it creates an on-device brief with estimated reading time, frequent terms, readability, document structure, visible byline/date metadata, citation markup, heading outline, and external source domains.
+Samsarix Page Lens helps researchers, writers, journalists, students, and analysts decide whether a webpage deserves deeper reading. With one explicit click, it creates an on-device brief with estimated reading time, frequent terms, readability, document structure, visible byline/date metadata, citation markup, heading outline, and external source domains. Save a brief as a baseline, then compare another page against it using descriptive deltas and shared source signals.
 
-Analysis stays in the browser. There are no accounts, analytics, ads, remote AI services, or page-content uploads. Results can be copied, exported as JSON, or saved locally for later reference.
+Analysis and comparison stay in the browser. There are no accounts, analytics, ads, remote AI services, or page-content uploads. Results can be copied, exported as JSON or Markdown, or saved locally for later reference; comparisons are not stored automatically.
 
 Readability is an English-oriented sentence-and-syllable estimate. Structure reflects headings and paragraphs. Source signals report visible provenance metadata and links; they are not a fact check, credibility rating, or quality judgment. Saved and exported URLs have credentials, queries, and fragments removed.
 

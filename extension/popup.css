@@ -62,4 +62,15 @@ summary { padding: 9px 10px; color: #d9d6e8; cursor: pointer; font-size: 11px; f
 .history-item strong { font-size: 11px; }
 .history-item span { color: #989db9; font-size: 10px; }
 .link-btn { border: 0; background: none; color: #b4a5ff; cursor: pointer; font-size: 12px; }
+.compare-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid #303454; }
+.compare-section h2 { margin: 0 0 8px; color: #c9c6dd; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.compare-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+.compare-controls select { min-width: 0; padding: 8px; border: 1px solid #404566; border-radius: 7px; background: #171a31; color: #f4f1ff; font-size: 11px; }
+.comparison-output { margin-top: 10px; padding: 10px; border: 1px solid #303454; border-radius: 8px; background: #14172b; }
+.comparison-title, .comparison-overlap { margin: 0 0 8px; color: #b9bdd3; font-size: 10px; line-height: 1.45; }
+.comparison-deltas { display: grid; grid-template-columns: 1fr auto; gap: 5px 10px; margin: 0 0 8px; font-size: 10px; }
+.comparison-deltas div { display: contents; }
+.comparison-deltas dt { color: #9da2bd; }
+.comparison-deltas dd { margin: 0; color: #f4f1ff; font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

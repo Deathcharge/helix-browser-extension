@@ -149,4 +149,21 @@ Remaining release gates:
 
 - Manual toolbar invocation on representative public and internal pages to exercise Chrome’s real `activeTab` gesture.
 - Manual clipboard and download confirmation behavior on supported Chrome versions.
+
+## Samsarix 1.3 comparison pass
+
+The next complete research journey builds on saved briefs rather than introducing another standalone score:
+
+- Save a source brief as a baseline, analyze another HTTP(S) page, and select the saved baseline in the popup.
+- Compare word count, reading time, readability, structure, source signals, external-domain count, and citation signals as current-minus-baseline deltas.
+- Show shared external source domains and frequent terms without declaring a winner or credibility outcome.
+- Copy or download a privacy-safe Markdown comparison; comparisons are calculated locally and are not stored automatically.
+- Preserve unavailable source signals when repeatedly migrating legacy 1.1 history so those values remain explicitly not comparable.
+
+Local release evidence for 1.3:
+
+- `npm run check`: passed the manifest/privacy policy, 18 unit tests, deterministic build, and installed-extension Chromium journey.
+- `npm audit`: 0 vulnerabilities.
+- Two independent builds produced the same `dist/samsarix-page-lens-1.3.0.zip` SHA-256: `939BCD4DB880E1F2ED4ABD8B6352D452DF0E84D3C72FB95B2320682B0329C392`.
+- PR, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.
 - Hosted privacy URL, final screenshots, store account, signed upload, and bounded pilot feedback.
