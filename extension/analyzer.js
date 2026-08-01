@@ -84,6 +84,40 @@
       methodology: 'Transparent local heuristics. Source signals describe visible provenance metadata and links; they do not establish truth, credibility, or quality.'
     };
   }
+  function compareBriefs(currentValue, baselineValue) {
+    const current = migrateStoredResult(currentValue); const baseline = migrateStoredResult(baselineValue);
+    if (!current || !baseline) throw new Error('Both comparison briefs must be valid saved briefs.');
+    const currentHosts = new Set(current.sources.map(source => source.host));
+    const baselineHosts = new Set(baseline.sources.map(source => source.host));
+    const currentTerms = new Set(current.keywords.map(keyword => keyword.term.toLowerCase()));
+    const baselineTerms = new Set(baseline.keywords.map(keyword => keyword.term.toLowerCase()));
+    return {
+      schemaVersion: 1,
+      comparedAt: new Date().toISOString(),
+      baseline: { title: baseline.title, url: baseline.url, analyzedAt: baseline.analyzedAt },
+      current: { title: current.title, url: current.url, analyzedAt: current.analyzedAt },
+      deltas: {
+        wordCount: current.wordCount - baseline.wordCount,
+        readingMinutes: current.readingMinutes - baseline.readingMinutes,
+        readability: current.scores.readability - baseline.scores.readability,
+        structure: current.scores.structure - baseline.scores.structure,
+        provenance: current.sourceSignalsAvailable === false || baseline.sourceSignalsAvailable === false ? null : current.scores.provenance - baseline.scores.provenance,
+        externalDomains: current.counts.externalDomains - baseline.counts.externalDomains,
+        citations: current.counts.citations - baseline.counts.citations
+      },
+      sharedSourceDomains: [...currentHosts].filter(host => baselineHosts.has(host)).sort(),
+      sharedKeywords: [...currentTerms].filter(term => baselineTerms.has(term)).sort(),
+      methodology: 'Descriptive differences between two locally generated briefs. Deltas do not establish factuality, credibility, or quality.'
+    };
+  }
+  function signed(value) { return value > 0 ? `+${value}` : String(value); }
+  function toComparisonMarkdown(comparison) {
+    if (!comparison?.baseline || !comparison?.current || !comparison?.deltas) throw new Error('Create a comparison before exporting it.');
+    const domains = comparison.sharedSourceDomains?.length ? comparison.sharedSourceDomains.map(host => `- ${escapeMarkdown(host)}`).join('\n') : '- None';
+    const keywords = comparison.sharedKeywords?.length ? comparison.sharedKeywords.map(term => `- ${escapeMarkdown(term)}`).join('\n') : '- None';
+    const provenance = comparison.deltas.provenance == null ? 'Not comparable' : signed(comparison.deltas.provenance);
+    return `# Page brief comparison\n\nBaseline: [${escapeMarkdown(comparison.baseline.title)}](${sanitizeUrl(comparison.baseline.url)})\n\nCurrent: [${escapeMarkdown(comparison.current.title)}](${sanitizeUrl(comparison.current.url)})\n\n## Current minus baseline\n\n- Words: ${signed(comparison.deltas.wordCount)}\n- Reading time: ${signed(comparison.deltas.readingMinutes)} min\n- Readability: ${signed(comparison.deltas.readability)}\n- Structure: ${signed(comparison.deltas.structure)}\n- Source signals: ${provenance}\n- External domains: ${signed(comparison.deltas.externalDomains)}\n- Citation signals: ${signed(comparison.deltas.citations)}\n\n## Shared source domains\n\n${domains}\n\n## Shared frequent terms\n\n${keywords}\n\n> Descriptive local comparison only—not a factuality, credibility, or quality judgment.\n`;
+  }
   function toMarkdown(result) {
     const sourceLines = result.sources?.length ? result.sources.map(source => `- [${escapeMarkdown(source.host)}](${sanitizeUrl(source.url)})${source.label ? ` — ${escapeMarkdown(source.label)}` : ''}`).join('\n') : '- None detected';
     const signalLines = result.provenanceSignals?.map(signal => `- ${signal.present ? '✓' : '○'} ${escapeMarkdown(signal.label)}: ${escapeMarkdown(signal.detail)}`).join('\n') || '';
@@ -93,10 +127,11 @@
   function migrateStoredResult(item) {
     if (!item || typeof item !== 'object' || ![1, 2].includes(item.schemaVersion) || typeof item.title !== 'string' || !Number.isFinite(item.wordCount)) return null;
     const legacy = item.schemaVersion === 1;
+    const sourceSignalsAvailable = !legacy && item.sourceSignalsAvailable !== false;
     const sources = normalizeSources(item.sources);
-    const signals = legacy ? [] : (Array.isArray(item.provenanceSignals) ? item.provenanceSignals : []).slice(0, 5).map(signal => ({
+    const signals = sourceSignalsAvailable ? (Array.isArray(item.provenanceSignals) ? item.provenanceSignals : []).slice(0, 5).map(signal => ({
       label: String(signal?.label || '').slice(0, 80), present: Boolean(signal?.present), detail: String(signal?.detail || '').slice(0, 160)
-    })).filter(signal => signal.label);
+    })).filter(signal => signal.label) : [];
     return {
       schemaVersion: 2, url: sanitizeUrl(item.url), title: item.title.replace(/\s+/g, ' ').trim().slice(0, 300) || 'Untitled page',
       description: String(item.description || '').replace(/\s+/g, ' ').trim().slice(0, 300), language: String(item.language || '').slice(0, 20), author: String(item.author || '').replace(/\s+/g, ' ').trim().slice(0, 160),
@@ -105,22 +140,22 @@
       scores: {
         readability: clamp(Number(item.scores?.readability) || 0),
         structure: clamp(Number(item.scores?.structure) || 0),
-        provenance: legacy ? null : clamp(Number(item.scores?.provenance) || 0)
+        provenance: sourceSignalsAvailable ? clamp(Number(item.scores?.provenance) || 0) : null
       },
       counts: {
         sentences: Math.max(0, Number(item.counts?.sentences) || 0), headings: Math.max(0, Number(item.counts?.headings) || 0),
         paragraphs: Math.max(0, Number(item.counts?.paragraphs) || 0), links: Math.max(0, Number(item.counts?.links) || 0),
-        citations: Math.max(0, Number(item.counts?.citations) || 0), externalDomains: legacy ? 0 : sources.length
+        citations: Math.max(0, Number(item.counts?.citations) || 0), externalDomains: sourceSignalsAvailable ? sources.length : 0
       },
       keywords: (Array.isArray(item.keywords) ? item.keywords : []).slice(0, 6).map(keyword => ({ term: String(keyword?.term || '').slice(0, 80), count: Math.max(0, Number(keyword?.count) || 0) })).filter(keyword => keyword.term),
       outline: legacy ? [] : (Array.isArray(item.outline) ? item.outline : []).slice(0, 12).map(value => String(value).slice(0, 160)),
-      sources: legacy ? [] : sources,
+      sources: sourceSignalsAvailable ? sources : [],
       provenanceSignals: signals,
-      sourceSignalsAvailable: !legacy,
+      sourceSignalsAvailable,
       excerpt: String(item.excerpt || '').slice(0, 280),
       extraction: { visitedNodes: Math.max(0, Number(item.extraction?.visitedNodes) || 0), truncated: Boolean(item.extraction?.truncated) },
       methodology: legacy ? 'Legacy brief migrated with private URL components removed. Reanalyze the page to collect source signals.' : String(item.methodology || '').slice(0, 300)
     };
   }
-  return { analyzePage, escapeMarkdown, migrateStoredResult, sanitizeUrl, syllables, toMarkdown, topKeywords };
+  return { analyzePage, compareBriefs, escapeMarkdown, migrateStoredResult, sanitizeUrl, syllables, toComparisonMarkdown, toMarkdown, topKeywords };
 });
