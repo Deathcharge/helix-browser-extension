@@ -166,4 +166,8 @@ Local release evidence for 1.3:
 - `npm audit`: 0 vulnerabilities.
 - Two independent builds produced the same `dist/samsarix-page-lens-1.3.0.zip` SHA-256: `939BCD4DB880E1F2ED4ABD8B6352D452DF0E84D3C72FB95B2320682B0329C392`.
 - PR, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.
+
+### CI runtime maintenance
+
+After the 1.3 merge, GitHub reported that `actions/checkout@v4` and `actions/setup-node@v4` target the retired Node 20 action runtime. The workflow now uses `actions/checkout@v6`, `actions/setup-node@v6`, and Node.js 24; the documented development baseline and package engine match that supported runtime.
 - Hosted privacy URL, final screenshots, store account, signed upload, and bounded pilot feedback.

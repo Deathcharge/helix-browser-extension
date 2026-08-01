@@ -17,7 +17,7 @@ Status: **1.3 release candidate for unpacked-extension evaluation.** Chrome Web 
 
 ## Install and try it
 
-Prerequisites: Chrome or Chromium with Manifest V3 support. Node.js 20+ is needed only for development.
+Prerequisites: Chrome or Chromium with Manifest V3 support. Node.js 24+ is needed only for development and release verification.
 
 1. Clone or download this repository.
 2. Open `chrome://extensions`.
