@@ -229,5 +229,5 @@ Local release evidence for 1.6:
 - The packaged Chromium journey covers empty-profile recovery access, exact queue backup download, bounded import, URL sanitization, imported-first merge, decision filtering, comparison/export, legacy migration, review timestamps, and declared non-English behavior.
 - `npm run build:store-assets` regenerated and visually verified three 1280×800 store compositions, including the actual portable-queue recovery state.
 - `npm audit`: 0 vulnerabilities.
-- Two independent builds produced the same `dist/samsarix-page-lens-1.6.0.zip` SHA-256: `D43D652C591C4956F27B75BD1A05DDE9B91A995B6DB9C80906DBF4074A6AB13F`.
+- Two independent builds produced the same `dist/samsarix-page-lens-1.6.0.zip` SHA-256: `3CB4D25CD60E0D48FF4F71AE5ABCC04A88CEB039925A1B33D8008A0DAE10B2CC`.
 - PR head, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.

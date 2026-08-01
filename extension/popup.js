@@ -118,6 +118,7 @@ async function importQueueBackup(file) {
   let value;
   try { value = JSON.parse(await file.text()); } catch { throw new Error('Queue backup is not valid JSON.'); }
   const imported = SamsarixAnalyzer.parseQueueBackup(value);
+  if (!confirm(`Import ${imported.briefs.length} ${imported.briefs.length === 1 ? 'brief' : 'briefs'}? Backup versions replace matching URLs. The merged queue remains capped at 25, so older local briefs may be dropped.`)) { setQueueStatus('Import canceled. The local queue was not changed.'); return; }
   const history = await getHistory(); const merged = SamsarixAnalyzer.mergeQueueHistory(imported.briefs, history);
   await chrome.storage.local.set({ history: merged }); await updateHistory();
   setQueueStatus(`Imported ${imported.briefs.length} ${imported.briefs.length === 1 ? 'brief' : 'briefs'}${imported.skipped ? ` · skipped ${imported.skipped} invalid or duplicate` : ''}. Queue now has ${merged.length}.`);

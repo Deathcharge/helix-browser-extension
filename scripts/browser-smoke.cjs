@@ -93,7 +93,13 @@ async function screenshotPopup(page, file) {
     if (queueBackup.format !== 'samsarix-page-lens-queue' || queueBackup.briefs.length !== 2) throw new Error('Queue backup did not contain the saved research queue');
     await queueDownload.delete();
     const importedBrief = { ...queueBackup.briefs[0], url: 'https://imported.example/report?private=removed', title: 'Imported reference', review: { decision: 'reference', note: 'Restored from a local backup.', updatedAt: '2026-08-01' } };
-    await popup.locator('#queue-import-file').setInputFiles({ name: 'page-lens.queue.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ ...queueBackup, briefs: [importedBrief, { invalid: true }] })) });
+    const importFile = { name: 'page-lens.queue.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ ...queueBackup, briefs: [importedBrief, { invalid: true }] })) };
+    popup.once('dialog', dialog => dialog.dismiss());
+    await popup.locator('#queue-import-file').setInputFiles(importFile);
+    await popup.getByText('Import canceled. The local queue was not changed.').waitFor();
+    if ((await popup.evaluate(async () => (await chrome.storage.local.get({ history: [] })).history)).length !== 2) throw new Error('Canceled queue import changed local history');
+    popup.once('dialog', dialog => dialog.accept());
+    await popup.locator('#queue-import-file').setInputFiles(importFile);
     await popup.getByText(/Imported 1 brief · skipped 1/).waitFor();
     const importedHistory = await popup.evaluate(async () => (await chrome.storage.local.get({ history: [] })).history);
     if (importedHistory[0].url !== 'https://imported.example/report' || importedHistory[0].review.decision !== 'reference') throw new Error('Queue import did not normalize and prioritize the imported brief');
