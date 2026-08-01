@@ -169,5 +169,5 @@ Local release evidence for 1.3:
 
 ### CI runtime maintenance
 
-After the 1.3 merge, GitHub reported that `actions/checkout@v4` and `actions/setup-node@v4` target the retired Node 20 action runtime. The workflow now uses `actions/checkout@v6`, `actions/setup-node@v6`, and Node.js 24; the documented development baseline and package engine match that supported runtime.
+After the 1.3 merge, GitHub reported that `actions/checkout@v4` and `actions/setup-node@v4` target the retired Node 20 action runtime. The workflow now uses SHA-pinned checkout v6.0.2 and setup-node v6.4.0 on Node.js 24; checkout credentials are not persisted because verification never performs authenticated Git writes. The documented development baseline and package engine match that supported runtime.
 - Hosted privacy URL, final screenshots, store account, signed upload, and bounded pilot feedback.
