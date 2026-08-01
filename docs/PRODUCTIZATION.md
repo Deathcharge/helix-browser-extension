@@ -200,6 +200,7 @@ Publication evidence:
 - GitHub Pages is public with workflow-based deployment and enforced HTTPS at `https://deathcharge.github.io/samsarix-page-lens/`.
 - Manual deployment run `30723382130` published from `main` commit `5aeb4f01f5662520ac30c13fb1d0ebb87e0d24b9` on August 1, 2026.
 - The live response matched `site/privacy/index.html` byte-for-byte at SHA-256 `8720D325FA04EDAD635E6395121648A5ECB8B4A88E854C3AC41F1407982DD98E` and exposed the correct title, no-telemetry statement, 1.6 import limits, and support address.
+- Follow-up deployment run `30723818332` published from `main` commit `4dae1d431f39733c83c65d5078a59400a243b413`; both **Deploy privacy disclosure** and the new **Verify deployed disclosure bytes** step passed.
 - Future manual deployments run `scripts/verify-live-privacy.mjs` after `deploy-pages` and fail if the public bytes do not match the committed disclosure.
 
 ## Samsarix 1.5 private research queue
