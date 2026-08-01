@@ -185,4 +185,12 @@ Local release evidence for 1.4:
 - `npm audit`: 0 vulnerabilities.
 - Two independent builds produced the same `dist/samsarix-page-lens-1.4.0.zip` SHA-256: `0273E37C23421D2C87D84E45351179FCD99D2DD7227DB92CC04DA247DF3BF82D`.
 - PR, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.
-- Hosted privacy URL, final screenshots, store account, signed upload, and bounded pilot feedback.
+
+## Store-publication assets
+
+- Three 1280×800 store screenshots are generated from packaged browser-test states: private source triage, saved-baseline comparison, and declared-Spanish language handling.
+- `npm run build:store-assets` regenerates the underlying popup captures and marketing compositions without remote fonts or imagery.
+- `site/privacy/index.html` is a standalone, no-script disclosure matching the extension’s current processing, storage, Incognito, language, comparison, permission, and contact behavior.
+- `.github/workflows/privacy-pages.yml` uses immutable action SHAs, disables checkout credential persistence, and deploys only through explicit `workflow_dispatch`; it does not silently publish on a push.
+- Static policy checks enforce action pinning, manual-only publication, key disclosure claims, and exactly three 1280×800 PNG assets.
+- Enabling Pages, running the workflow, verifying the public HTTPS URL, and submitting the store package remain owner-controlled external actions.

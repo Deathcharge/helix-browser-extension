@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- Copyright 2026 Samsarix LLC -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="Privacy disclosure for the Samsarix Page Lens browser extension.">
+    <title>Samsarix Page Lens — Privacy</title>
+    <style>
+      :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#0b0e1c;color:#f5f3ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 90% 0,#2d245c,#0b0e1c 36rem);line-height:1.65}header,main,footer{width:min(760px,calc(100% - 36px));margin:auto}header{padding:52px 0 28px;border-bottom:1px solid #303554}.brand{display:flex;align-items:center;gap:10px;color:#dcd7ff;font-weight:800}.mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid #7565c7;border-radius:50%;color:#a898ff}h1{margin:32px 0 8px;font-size:clamp(34px,7vw,58px);line-height:1;letter-spacing:-.04em}.lede{max-width:650px;color:#b9bdd2;font-size:18px}.effective{color:#7bd8ae;font-size:13px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}main{padding:28px 0 54px}section{padding:20px 0;border-bottom:1px solid #242943}h2{margin:0 0 8px;font-size:20px}p,li{color:#c3c6d7}code{padding:2px 5px;border-radius:4px;background:#1d2138;color:#d9d2ff}a{color:#ac9cff}footer{display:flex;justify-content:space-between;gap:20px;padding:24px 0 42px;color:#898fae;font-size:13px}@media(max-width:560px){footer{display:block}}
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span class="mark" aria-hidden="true">◎</span><span>Samsarix Page Lens</span></div>
+      <h1>Privacy disclosure</h1>
+      <p class="lede">Page Lens creates source-triage briefs locally. It has no account system, analytics, advertising, remote AI service, telemetry, or page-content upload.</p>
+      <p class="effective">Effective August 1, 2026</p>
+    </header>
+    <main>
+      <section><h2>Who operates Page Lens</h2><p>Samsarix Page Lens is developed by Samsarix LLC. Privacy questions can be sent to <a href="mailto:contact@samsarix.com">contact@samsarix.com</a>; support and private security-channel requests can be sent to <a href="mailto:support@samsarix.com">support@samsarix.com</a>.</p></section>
+      <section><h2>When processing begins</h2><p>Processing begins only when the user selects <strong>Create page brief</strong> on a normal HTTP or HTTPS page. Unsaved page text exists only in memory while the extension popup is active.</p></section>
+      <section><h2>What is processed</h2><p>The bounded extractor may process page text, title, sanitized URL, description, declared HTML language, headings, paragraphs, links, citation-like markup, visible byline/date metadata, and up to 20 unique external source domains. It visits at most 15,000 DOM nodes and retains at most 250,000 characters.</p><p>It skips scripts, styles, navigation, footers, forms, dialogs, templates, and elements explicitly marked <code>hidden</code> or <code>aria-hidden="true"</code>. It does not inspect form values. CSS-only hidden text may still be encountered.</p></section>
+      <section><h2>Language and readability</h2><p>The English readability formula runs only when a page explicitly declares English. Declared non-English and undeclared-language pages retain Unicode-aware word, frequent-term, structure, and source analysis, while readability is shown as unavailable. No remote language detection occurs.</p></section>
+      <section><h2>Storage and retention</h2><p>Nothing is saved automatically. Selecting <strong>Save locally</strong> stores a schema-v2 brief in <code>chrome.storage.local</code>. History is deduplicated by sanitized page URL, capped at 25 briefs, and remains until the user clears it or removes the extension/browser profile.</p><p>A brief contains structured counts and scores, visible metadata, frequent terms, an outline, external source domains, timestamps, and an excerpt of at most 280 characters. URL credentials, query parameters, and fragments are removed before storage or export. Paths, titles, metadata, and excerpts can still be sensitive.</p><p>Chrome shares <code>chrome.storage.local</code> between regular and Incognito extension contexts. Saving in Incognito therefore adds the brief to the same persistent history available during regular browsing.</p></section>
+      <section><h2>Comparison and export</h2><p>Two-brief comparisons are computed locally and are not stored automatically. Copy, Markdown, and JSON export require explicit user action. After export, the system clipboard or browser download behavior controls the resulting data.</p></section>
+      <section><h2>Permissions</h2><ul><li><code>activeTab</code> gives temporary access only to the invoked tab.</li><li><code>scripting</code> runs the bounded extractor after explicit action.</li><li><code>storage</code> retains user-requested briefs.</li></ul><p>Page Lens requests no host permissions and installs no background worker or always-on content script.</p></section>
+      <section><h2>Changes</h2><p>Any future remote processing requires an architecture, permission, store-declaration, and disclosure review before release. The canonical source disclosure is maintained with the extension in <a href="https://github.com/Deathcharge/samsarix-page-lens/blob/main/docs/PRIVACY.md">docs/PRIVACY.md</a>.</p></section>
+    </main>
+    <footer><span>Copyright © 2026 Samsarix LLC</span><span><a href="https://github.com/Deathcharge/samsarix-page-lens">Source</a> · <a href="mailto:support@samsarix.com">Support</a></span></footer>
+  </body>
+</html>

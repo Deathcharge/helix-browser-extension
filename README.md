@@ -87,6 +87,8 @@ npm run test:browser
 - [Productization and acceptance record](docs/PRODUCTIZATION.md)
 - [Chrome Web Store release packet](docs/STORE_LISTING.md)
 - [Roadmap](ROADMAP.md)
+- [Chrome Web Store screenshots](store-assets/README.md)
+- [Hostable privacy disclosure](site/privacy/index.html)
 
 ## Support, ownership, and license
 
