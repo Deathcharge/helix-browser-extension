@@ -12,9 +12,9 @@
 
 **Detailed description:**
 
-Samsarix Page Lens helps researchers, writers, journalists, students, and analysts decide whether a webpage deserves deeper reading. With one explicit click, it creates an on-device brief with estimated reading time, frequent terms, readability, document structure, visible byline/date metadata, citation markup, heading outline, and external source domains. Save a brief as a baseline, then compare another page against it using descriptive deltas and shared source signals.
+Samsarix Page Lens helps researchers, writers, journalists, students, and analysts decide whether a webpage deserves deeper reading. With one explicit click, it creates an on-device brief with estimated reading time, frequent terms, readability, document structure, visible byline/date metadata, citation markup, heading outline, and external source domains. Mark saved sources to read deeper, keep as references, or skip; add a bounded private note and filter the resulting research queue. A saved brief can also become a comparison baseline for descriptive deltas and shared source signals.
 
-Analysis and comparison stay in the browser. There are no accounts, analytics, ads, remote AI services, or page-content uploads. Results can be copied, exported as JSON or Markdown, or saved locally for later reference; comparisons are not stored automatically.
+Analysis, queue filtering, and comparison stay in the browser. There are no accounts, analytics, ads, remote AI services, or page-content uploads. Results and user-entered review metadata can be copied, exported as JSON or Markdown, or saved locally for later reference; comparisons are not stored automatically.
 
 Readability is an English-oriented sentence-and-syllable estimate calculated only for pages that explicitly declare English. If a page declares another language or omits its language, readability is shown as unavailable with the reason. Unicode-aware word counts, frequent terms, structure, and source signals remain available. Source signals are not a fact check, credibility rating, or quality judgment. Saved and exported URLs have credentials, queries, and fragments removed.
 
@@ -29,7 +29,7 @@ No host permissions are requested.
 ## Owner-provided assets and actions
 
 - [ ] Confirm Samsarix LLC owns or has permission to use the product name and supplied icon artwork.
-- [x] Generate and visually review three 1280×800 screenshots in `store-assets/` from the packaged 1.4 browser journey.
+- [x] Generate and visually review three 1280×800 screenshots in `store-assets/` from the packaged 1.5 browser journey.
 - [ ] Provide a 440×280 promotional tile if desired.
 - [x] Prepare the standalone disclosure at `site/privacy/index.html` and a SHA-pinned, owner-triggered GitHub Pages workflow.
 - [ ] Enable GitHub Pages, manually run **Publish privacy disclosure**, verify the reported HTTPS URL, and use it in the listing.
@@ -40,4 +40,4 @@ No host permissions are requested.
 
 ## Data-use declaration basis
 
-The current runtime performs no network requests and includes no analytics or advertising SDK. Page content is processed ephemerally on-device. User-requested schema-v2 briefs are stored locally, capped at 25, and removable. Store declarations must be revalidated against the exact submission artifact and current Chrome Web Store questionnaire.
+The current runtime performs no network requests and includes no analytics or advertising SDK. Page content is processed ephemerally on-device. User-requested schema-v2 briefs, including optional review decisions and notes capped at 500 characters, are stored locally, capped at 25, and removable. Store declarations must be revalidated against the exact submission artifact and current Chrome Web Store questionnaire.
