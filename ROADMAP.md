@@ -7,7 +7,7 @@ This roadmap separates four gates: merge, release, publication, and flagship ado
 Portfolio role: **integration or extension**. Keep its platform-specific packaging and release lifecycle separate. Any flagship integration should use a documented HTTP, event, or package contract with explicit auth, privacy, and failure ownership.
 Planned repository identity: `Deathcharge/samsarix-page-lens` (ready).
 
-Current disposition: productization is merged. Version 1.5 develops the private source-triage wedge with saved-baseline comparison, language-honest readability, and a local research decision queue; public release and adoption remain separate decisions.
+Current disposition: productization is merged. Version 1.6 develops the private source-triage wedge with saved-baseline comparison, language-honest readability, a local research decision queue, and explicit portable recovery; public release and adoption remain separate decisions.
 
 ## Stabilize the productized default
 
@@ -34,6 +34,7 @@ Current hardening backlog:
 - Store screenshots and a hostable privacy disclosure are prepared and policy-checked. Pages enablement/publication, store account/signing/submission, and adoption evidence remain owner-controlled.
 - [x] Use Unicode-aware word/term tokenization; calculate the English readability formula only for pages that explicitly declare English, and show an unavailable reason for non-English or undeclared language.
 - [x] Turn triage into an actionable local queue with bounded private notes, explicit review decisions, filtering, migration, and portable export.
+- [x] Add a versioned, bounded queue backup/import contract and whole-queue Markdown handoff without introducing an account, network request, or sync permission.
 - Provenance cues vary by page type and need pilot feedback before weighting is treated as stable.
 - CSS-only hidden content is not detected; privacy copy now states this precisely.
 - [x] Rename the extracted source directory to the canonical `extension/` path.

@@ -49,6 +49,9 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .history-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .history-heading-row select { width: auto; max-width: 145px; }
 .history-decision { color: #9ddfc4; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.queue-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; }
+.queue-actions #queue-import-btn { grid-column: 1 / -1; }
+.queue-status { margin: 8px 0 0; padding: 8px 10px; border-radius: 7px; background: #142824; color: #b9dfd0; font-size: 10px; line-height: 1.4; }
 details { margin-top: 8px; border: 1px solid #303454; border-radius: 8px; background: #14172b; }
 summary { padding: 9px 10px; color: #d9d6e8; cursor: pointer; font-size: 11px; font-weight: 650; }
 .signal-list, .compact-list { display: grid; gap: 6px; margin: 0; padding: 0 10px 10px; list-style: none; }

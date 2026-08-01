@@ -212,3 +212,22 @@ Local release evidence for 1.5:
 - `npm audit`: 0 vulnerabilities.
 - Two independent builds produced the same `dist/samsarix-page-lens-1.5.0.zip` SHA-256: `336FF93EA34E385D5A8784A61B4AC34159AABBE8DEBA6D6A2A78AB155FD2963B`.
 - PR head, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.
+
+## Samsarix 1.6 portable queue recovery
+
+The local-first queue now has an explicit portability and recovery boundary:
+
+- **Backup JSON** emits a versioned Page Lens envelope containing the normalized, deduplicated queue of at most 25 briefs.
+- **Import backup** reads one user-selected JSON file locally, rejects files over 1 MB or envelopes over 100 input records, and validates the complete envelope before writing.
+- Imported records pass through the same schema migration, URL sanitization, note bounds, and deduplication as existing history; imported records intentionally take precedence for matching URLs.
+- **Queue Markdown** creates a readable whole-queue handoff but is not described as a lossless restore format.
+- No runtime network request, account, host permission, background worker, `unlimitedStorage`, or sync permission was added.
+
+Local release evidence for 1.6:
+
+- Manifest/privacy/workflow policy checks and all 27 deterministic unit tests pass.
+- The packaged Chromium journey covers empty-profile recovery access, exact queue backup download, bounded import, URL sanitization, imported-first merge, decision filtering, comparison/export, legacy migration, review timestamps, and declared non-English behavior.
+- `npm run build:store-assets` regenerated and visually verified three 1280×800 store compositions, including the actual portable-queue recovery state.
+- `npm audit`: 0 vulnerabilities.
+- Two independent builds produced the same `dist/samsarix-page-lens-1.6.0.zip` SHA-256: `3CB4D25CD60E0D48FF4F71AE5ABCC04A88CEB039925A1B33D8008A0DAE10B2CC`.
+- PR head, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.

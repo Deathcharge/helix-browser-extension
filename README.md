@@ -11,10 +11,11 @@ One explicit click produces:
 - privacy-safe Markdown or JSON export and optional local history.
 - an on-device comparison between the current brief and any saved baseline, with descriptive deltas and shared signals.
 - a private research queue with review decisions, bounded notes, and decision filters.
+- versioned JSON queue backup/import and whole-queue Markdown handoff without cloud sync.
 
 Source signals describe what the page exposes. They do **not** establish factuality, credibility, authority, or quality.
 
-Status: **1.5 release candidate for unpacked-extension evaluation.** Chrome Web Store publication and pilot adoption are not yet complete.
+Status: **1.6 release candidate for unpacked-extension evaluation.** Chrome Web Store publication and pilot adoption are not yet complete.
 
 ## Install and try it
 
@@ -37,6 +38,7 @@ Chrome blocks extensions from reading internal pages such as `chrome://extension
 - **Source comparison:** save a baseline, analyze a second page, and compare length, structure, provenance cues, citations, shared source domains, and frequent terms locally.
 - **Private browsing workflow:** analyze intranet or sensitive pages locally, then choose explicitly whether to save a bounded brief.
 - **Research queue:** mark a saved source to read deeper, keep as a reference, or skip; add a short private note and filter the queue without creating an account.
+- **Portable recovery:** download the bounded queue as versioned JSON, restore it into another Page Lens profile, or hand off the whole queue as readable Markdown.
 
 ## Privacy and permissions
 
@@ -54,6 +56,8 @@ Saved and exported page/source URLs have credentials, queries, and fragments rem
 
 Comparisons are calculated on demand from two briefs already in the popup and are not stored automatically. Comparison Markdown contains sanitized URLs and descriptive deltas; it does not rank either page as more truthful or credible.
 
+Queue backup and import are explicit local actions, not synchronization. JSON imports are limited to 1 MB and 100 input records, validated before storage, normalized through the same privacy migration as existing history, deduplicated, and capped at 25 stored briefs. A structurally invalid backup does not modify the current queue.
+
 ## Development and verification
 
 ```bash
@@ -62,7 +66,7 @@ npx playwright install chromium
 npm run check
 ```
 
-The complete gate runs manifest/privacy/workflow policy checks, twenty-four deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, review decisions and filtering, history reopening, saved-baseline comparison, export, and declared non-English behavior.
+The complete gate runs manifest/privacy/workflow policy checks, twenty-seven deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, review decisions and filtering, queue backup/import, history reopening, saved-baseline comparison, export, and declared non-English behavior.
 
 Individual commands:
 
@@ -73,7 +77,7 @@ npm run build
 npm run test:browser
 ```
 
-`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.5.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. Playwright, jsdom, and fflate are development-only dependencies and are not shipped.
+`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.6.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. Playwright, jsdom, and fflate are development-only dependencies and are not shipped.
 
 ### Architecture
 
