@@ -107,11 +107,12 @@ test('keeps non-English triage useful without applying an English readability sc
   assert.ok(result.keywords.some(keyword => keyword.term === 'investigación'));
   assert.match(toMarkdown(result), /Readability: Not available for es\\-mx/);
 });
-test('labels undeclared-language readability as an English assumption', () => {
+test('withholds readability when the page language is undeclared', () => {
   const result = analyzePage({ ...sample, language: '' });
-  assert.equal(result.readabilityAvailable, true);
-  assert.equal(result.readabilityBasis, 'assumed-English');
-  assert.match(toMarkdown(result), /English assumed; page language undeclared/);
+  assert.equal(result.readabilityAvailable, false);
+  assert.equal(result.readabilityBasis, 'undeclared-language');
+  assert.equal(result.scores.readability, null);
+  assert.match(toMarkdown(result), /Not available \(page language undeclared\)/);
 });
 test('does not compare readability across supported and unsupported languages', () => {
   const english = analyzePage(sample);

@@ -174,8 +174,8 @@ After the 1.3 merge, GitHub reported that `actions/checkout@v4` and `actions/set
 ## Samsarix 1.4 language-honesty pass
 
 - Tokenization now retains Unicode letters and numbers so non-English word counts and frequent terms remain useful.
-- The Flesch-style English readability score is produced only for declared English pages or pages with no language declaration.
-- Undeclared-language pages visibly label the English assumption; declared non-English pages show readability as unavailable while retaining structure and source triage.
+- The Flesch-style English readability score is produced only for pages that explicitly declare English.
+- Undeclared-language and declared non-English pages show a specific unavailable reason while retaining structure and source triage.
 - Comparison and Markdown/copy export propagate `Not comparable` or `Not available` instead of converting missing readability to zero.
 - Stored schema-v2 records are normalized on read so previously saved, declared non-English briefs lose misleading English readability values without discarding their other signals.
 
@@ -183,6 +183,6 @@ Local release evidence for 1.4:
 
 - `npm run check`: passed workflow/privacy/manifest policy, 22 unit tests, artifact build, and the packaged English/comparison/non-English Chromium journey.
 - `npm audit`: 0 vulnerabilities.
-- Two independent builds produced the same `dist/samsarix-page-lens-1.4.0.zip` SHA-256: `63AE29071C6AC65164B3D08F7E35749450668B6E90A56077BADB18D8BF86AE53`.
+- Two independent builds produced the same `dist/samsarix-page-lens-1.4.0.zip` SHA-256: `0273E37C23421D2C87D84E45351179FCD99D2DD7227DB92CC04DA247DF3BF82D`.
 - PR, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.
 - Hosted privacy URL, final screenshots, store account, signed upload, and bounded pilot feedback.

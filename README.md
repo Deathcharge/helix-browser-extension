@@ -5,7 +5,7 @@ Samsarix Page Lens creates a private source-triage brief for the webpage in fron
 One explicit click produces:
 
 - reading time, word count, and frequent terms;
-- an English readability indicator with an explicit unavailable state for declared non-English pages, plus document-structure signals;
+- an English readability indicator only for pages that explicitly declare English, with clear unavailable states otherwise, plus document-structure signals;
 - a provenance checklist covering visible bylines, dates, external source domains, and citation markup;
 - the page’s heading outline and linked source domains;
 - privacy-safe Markdown or JSON export and optional local history.
@@ -31,7 +31,7 @@ Chrome blocks extensions from reading internal pages such as `chrome://extension
 
 - **Research triage:** inspect length, outline, byline/date metadata, and linked source domains before investing time in a page.
 - **Writing and editing:** gauge readability, structure, repeated terms, and whether provenance cues are visible to readers.
-- **Multilingual triage:** retain Unicode-aware word counts, frequent terms, structure, and source cues while avoiding a misleading English readability score on pages that declare another language.
+- **Multilingual triage:** retain Unicode-aware word counts, frequent terms, structure, and source cues while avoiding a misleading English readability score when a page declares another language or no language.
 - **Source handoff:** export a consistent Markdown brief for notes, review, or collaboration without copying private query parameters.
 - **Source comparison:** save a baseline, analyze a second page, and compare length, structure, provenance cues, citations, shared source domains, and frequent terms locally.
 - **Private browsing workflow:** analyze intranet or sensitive pages locally, then choose explicitly whether to save a bounded brief.

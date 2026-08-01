@@ -32,7 +32,7 @@ Current hardening backlog:
 
 - Popup/Chrome integration, extraction, sanitization, history, and the exact built artifact are covered by committed Chromium smoke testing. Manual toolbar `activeTab` behavior and clipboard/download prompts remain release gates.
 - No store account, screenshots, hosted privacy disclosure, signed submission, or adoption evidence.
-- [x] Use Unicode-aware word/term tokenization; calculate the English readability formula only for declared English or undeclared-language pages, label the latter assumption, and show an unavailable state for declared non-English pages.
+- [x] Use Unicode-aware word/term tokenization; calculate the English readability formula only for pages that explicitly declare English, and show an unavailable reason for non-English or undeclared language.
 - Provenance cues vary by page type and need pilot feedback before weighting is treated as stable.
 - CSS-only hidden content is not detected; privacy copy now states this precisely.
 - [x] Rename the extracted source directory to the canonical `extension/` path.

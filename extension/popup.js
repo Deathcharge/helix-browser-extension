@@ -25,7 +25,7 @@ function display(result) {
   $('explanation').textContent = `${Number(counts.headings) || 0} headings · ${Number(counts.paragraphs) || 0} paragraphs · ${Number(counts.externalDomains) || 0} external domains · ${Number(counts.citations) || 0} citation signals`;
   $('byline').textContent = result.author || 'No byline detected';
   $('dates').textContent = `Published ${formatDate(result.publishedAt)} · Updated ${formatDate(result.modifiedAt)}`;
-  const readabilityNote = result.readabilityAvailable === false ? (result.readabilityBasis === 'unsupported-language' ? `Readability is unavailable because the page declares ${result.language || 'an unsupported language'}.` : 'Readability is unavailable for this saved brief.') : (result.readabilityBasis === 'assumed-English' ? 'Page language is not declared; readability assumes English.' : '');
+  const readabilityNote = result.readabilityAvailable === false ? (result.readabilityBasis === 'unsupported-language' ? `Readability is unavailable because the page declares ${result.language || 'an unsupported language'}.` : (result.readabilityBasis === 'undeclared-language' ? 'Readability is unavailable because the page does not declare a language.' : 'Readability is unavailable for this saved brief.')) : '';
   $('readability-note').textContent = readabilityNote; $('readability-note').classList.toggle('hidden', !readabilityNote);
   $('truncation-note').classList.toggle('hidden', !result.extraction?.truncated);
   $('migration-note').classList.toggle('hidden', result.sourceSignalsAvailable !== false);

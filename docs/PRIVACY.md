@@ -12,7 +12,7 @@ Extraction visits at most 15,000 DOM nodes and retains at most 250,000 character
 
 Processing occurs locally in the browser. Unsaved page text exists only in memory while the extension popup is active.
 
-The page’s declared HTML language is used locally to decide whether the English readability formula applies. No remote language detection occurs. Declared non-English pages retain word, term, structure, and source analysis but receive no readability score; an undeclared language is visibly labeled as an English assumption.
+The page’s declared HTML language is used locally to decide whether the English readability formula applies. No remote language detection occurs. Only pages that explicitly declare English receive a readability score. Declared non-English and undeclared-language pages retain word, term, structure, and source analysis, with readability shown as unavailable.
 
 ## Data stored or exported
 

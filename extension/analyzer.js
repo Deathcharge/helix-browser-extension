@@ -35,7 +35,7 @@
   }
   function normalizeLanguage(value) { return String(value || '').trim().toLowerCase().replace(/_/g, '-').slice(0, 20); }
   function readabilityState(language) {
-    if (!language) return { available: true, basis: 'assumed-English' };
+    if (!language) return { available: false, basis: 'undeclared-language' };
     if (language.split('-')[0] === 'en') return { available: true, basis: 'declared-English' };
     return { available: false, basis: 'unsupported-language' };
   }
@@ -89,7 +89,7 @@
       sources, provenanceSignals, excerpt: text.slice(0, 280), extraction: { visitedNodes: Math.max(0, Number(snapshot.visitedNodes) || 0), truncated: Boolean(snapshot.truncated) },
       readabilityAvailable: readability.available, readabilityBasis: readability.basis,
       sourceSignalsAvailable: true,
-      methodology: 'Transparent local heuristics. Readability uses an English formula only for declared English or undeclared language; source signals do not establish truth, credibility, or quality.'
+      methodology: 'Transparent local heuristics. Readability uses an English formula only for pages that declare English; source signals do not establish truth, credibility, or quality.'
     };
   }
   function compareBriefs(currentValue, baselineValue) {
@@ -130,7 +130,7 @@
   function toMarkdown(result) {
     const sourceLines = result.sources?.length ? result.sources.map(source => `- [${escapeMarkdown(source.host)}](${sanitizeUrl(source.url)})${source.label ? ` — ${escapeMarkdown(source.label)}` : ''}`).join('\n') : '- None detected';
     const signalLines = result.provenanceSignals?.map(signal => `- ${signal.present ? '✓' : '○'} ${escapeMarkdown(signal.label)}: ${escapeMarkdown(signal.detail)}`).join('\n') || '';
-    const readability = result.readabilityAvailable === false ? `Not available for ${escapeMarkdown(result.language || 'this language')}` : `${result.scores.readability}/100${result.readabilityBasis === 'assumed-English' ? ' (English assumed; page language undeclared)' : ''}`;
+    const readability = result.readabilityAvailable === false ? (result.readabilityBasis === 'undeclared-language' ? 'Not available (page language undeclared)' : `Not available for ${escapeMarkdown(result.language || 'this language')}`) : `${result.scores.readability}/100`;
     const sourceScore = result.sourceSignalsAvailable === false ? 'Not analyzed' : `${result.scores.provenance}/100`;
     return `# ${escapeMarkdown(result.title)}\n\n${result.url ? `Source: ${sanitizeUrl(result.url)}\n\n` : ''}Analyzed locally: ${escapeMarkdown(result.analyzedAt)}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${readability}\n- Structure: ${result.scores.structure}/100\n- Source signals: ${sourceScore}\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${escapeMarkdown(item.term)}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
   }
@@ -167,7 +167,7 @@
       excerpt: String(item.excerpt || '').slice(0, 280),
       extraction: { visitedNodes: Math.max(0, Number(item.extraction?.visitedNodes) || 0), truncated: Boolean(item.extraction?.truncated) },
       readabilityAvailable,
-      readabilityBasis: readabilityAvailable ? readability.basis : (readability.available ? 'unavailable' : 'unsupported-language'),
+      readabilityBasis: readabilityAvailable ? readability.basis : (item.readabilityAvailable === false && readability.available ? 'unavailable' : readability.basis),
       methodology: legacy ? 'Legacy brief migrated with private URL components removed. Reanalyze the page to collect source signals.' : String(item.methodology || '').slice(0, 300)
     };
   }

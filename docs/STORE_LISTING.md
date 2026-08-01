@@ -16,7 +16,7 @@ Samsarix Page Lens helps researchers, writers, journalists, students, and analys
 
 Analysis and comparison stay in the browser. There are no accounts, analytics, ads, remote AI services, or page-content uploads. Results can be copied, exported as JSON or Markdown, or saved locally for later reference; comparisons are not stored automatically.
 
-Readability is an English-oriented sentence-and-syllable estimate. It is calculated for declared English pages; when a page omits its language, the extension labels the English assumption, and when a page declares another language, readability is shown as unavailable. Unicode-aware word counts, frequent terms, structure, and source signals remain available. Source signals are not a fact check, credibility rating, or quality judgment. Saved and exported URLs have credentials, queries, and fragments removed.
+Readability is an English-oriented sentence-and-syllable estimate calculated only for pages that explicitly declare English. If a page declares another language or omits its language, readability is shown as unavailable with the reason. Unicode-aware word counts, frequent terms, structure, and source signals remain available. Source signals are not a fact check, credibility rating, or quality judgment. Saved and exported URLs have credentials, queries, and fragments removed.
 
 ## Permission justifications
 
