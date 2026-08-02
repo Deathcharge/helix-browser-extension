@@ -27,6 +27,7 @@ Current disposition: productization is merged. Version 1.7 packages the private 
 - Test the exact distributable on its target platform, including failure and upgrade paths.
 - Review permissions, data retention, privacy copy, signing, and store or platform ownership.
 - Release a prerelease to a bounded pilot before broad distribution.
+- [x] Publish the verified unsigned artifact as GitHub prerelease `v1.7.0-pilot.1`, explicitly labeled non-production and not Chrome Web Store approved.
 - [x] Define a bounded pilot protocol with cohorts, representative tasks, privacy rules, explicit thresholds, severity, and an anonymized evidence template.
 - [x] Add a static, structured pilot-feedback route that opens the user's email client without attaching page data or introducing an extension network request.
 

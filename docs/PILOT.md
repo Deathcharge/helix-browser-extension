@@ -19,7 +19,7 @@ Do not recruit only contributors, friends already familiar with the interface, o
 
 ## Safety and privacy
 
-- Use release artifact `samsarix-page-lens-1.7.0.zip` with SHA-256 `67BAFCADE5B374C17E03347BCEDD473AA3E7AACB3041054B402E13F6105EBEB4`. Do not silently substitute another build.
+- Use the unsigned [v1.7.0-pilot.1 prerelease](https://github.com/Deathcharge/samsarix-page-lens/releases/tag/v1.7.0-pilot.1) artifact `samsarix-page-lens-1.7.0.zip` with SHA-256 `67BAFCADE5B374C17E03347BCEDD473AA3E7AACB3041054B402E13F6105EBEB4`. Do not silently substitute another build.
 - Explain that the build is an unsigned pilot extension and provide removal instructions.
 - Participants choose their own ordinary public pages. Do not ask them to disclose URLs, browsing history, source text, queue exports, screenshots, or private notes.
 - Do not use pages containing medical, financial, legal, authentication, private workplace, or personally sensitive material for the pilot.

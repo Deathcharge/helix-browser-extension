@@ -198,6 +198,7 @@ Local release evidence for 1.4:
 - The store packet now includes the current required 440×280 small promotional tile, conservative local-data declarations, and reviewer instructions that require no account or credentials. The declarations treat webpage content, the analyzed URL, and optional review notes as handled data even though Page Lens never transmits them.
 - Version 1.7 adds a bounded pilot protocol with participant cohorts, real source-decision tasks, privacy exclusions, success thresholds, severity rules, and an anonymous aggregate evidence template. A static **Pilot feedback** mail link supplies structured questions and warns against sharing private URLs or confidential content; it does not attach current-page data or make an extension request.
 - Two independent 1.7 builds produced `dist/samsarix-page-lens-1.7.0.zip` at SHA-256 `67BAFCADE5B374C17E03347BCEDD473AA3E7AACB3041054B402E13F6105EBEB4`. The installed Chromium journey verified the structured link in the packaged popup without invoking an email client, then passed migration, analysis, review, comparison, queue recovery, language handling, and cleanup.
+- GitHub prerelease [`v1.7.0-pilot.1`](https://github.com/Deathcharge/samsarix-page-lens/releases/tag/v1.7.0-pilot.1) targets merge commit `8486a3bd6f2a97cfc3f5b808ad940f358492d1ed`. GitHub reports the uploaded 25,576-byte ZIP digest as the same SHA-256. Release copy labels it unsigned, non-production, and not a Chrome Web Store release.
 
 Publication evidence:
 
