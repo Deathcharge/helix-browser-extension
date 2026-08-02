@@ -60,13 +60,15 @@ for (const claim of ['no account system, analytics, advertising', 'at most 15,00
   if (!privacySite.includes(claim)) throw new Error(`Hosted privacy disclosure is missing required claim: ${claim}`);
 }
 const storeAssetDirectory = new URL('../store-assets/', import.meta.url);
-const storeImages = (await readdir(storeAssetDirectory)).filter(name => name.endsWith('.png'));
+const storeImages = (await readdir(storeAssetDirectory)).filter(name => /^\d\d-.*\.png$/.test(name));
 if (storeImages.length !== 3) throw new Error('Exactly three reviewed store screenshots are required');
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 for (const name of storeImages) {
   const png = await readFile(new URL(name, storeAssetDirectory));
   if (png.length < 24 || !png.subarray(0, 8).equals(pngSignature) || png.toString('ascii', 12, 16) !== 'IHDR' || png.readUInt32BE(16) !== 1280 || png.readUInt32BE(20) !== 800) throw new Error(`${name} must be a 1280x800 PNG`);
 }
+const promo = await readFile(new URL('promo-small-440x280.png', storeAssetDirectory));
+if (promo.length < 24 || !promo.subarray(0, 8).equals(pngSignature) || promo.toString('ascii', 12, 16) !== 'IHDR' || promo.readUInt32BE(16) !== 440 || promo.readUInt32BE(20) !== 280) throw new Error('The required small promotional tile must be a 440x280 PNG');
 for (const name of names.filter(name => extname(name) === '.js')) {
   const result = spawnSync(process.execPath, ['--check', join(fileURLToPath(root), name)], { stdio: 'inherit' });
   if (result.status) process.exit(result.status);
