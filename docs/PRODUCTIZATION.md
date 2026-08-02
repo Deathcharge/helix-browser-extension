@@ -194,6 +194,8 @@ Local release evidence for 1.4:
 - `.github/workflows/privacy-pages.yml` uses immutable action SHAs, disables checkout credential persistence, and deploys only through explicit `workflow_dispatch`; it does not silently publish on a push.
 - Static policy checks enforce action pinning, manual-only publication, key disclosure claims, and exactly three 1280×800 PNG assets.
 - Store-account registration, signing, submission, and owner approval remain external actions.
+- Submission readiness now has a separate `npm run release:verify` gate. It rebuilds the exact ZIP, enforces an explicit packaged-file allowlist and minimal Manifest V3 surface, compares every ZIP member with the unpacked build, checks required store-asset dimensions, rejects dynamic/remote-code indicators, byte-verifies the live disclosure, and emits archive/privacy SHA-256 values in `dist/submission-report.json`. CI runs this gate after the complete browser journey.
+- The store packet now includes the current required 440×280 small promotional tile, conservative local-data declarations, and reviewer instructions that require no account or credentials. The declarations treat webpage content, the analyzed URL, and optional review notes as handled data even though Page Lens never transmits them.
 
 Publication evidence:
 
