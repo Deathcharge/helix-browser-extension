@@ -15,7 +15,7 @@ One explicit click produces:
 
 Source signals describe what the page exposes. They do **not** establish factuality, credibility, authority, or quality.
 
-Status: **1.6 release candidate for unpacked-extension evaluation.** Chrome Web Store publication and pilot adoption are not yet complete.
+Status: **1.7 bounded-pilot candidate for unpacked-extension evaluation.** Chrome Web Store publication and real-participant validation are not yet complete.
 
 ## Install and try it
 
@@ -77,7 +77,7 @@ npm run build
 npm run test:browser
 ```
 
-`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.6.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. Playwright, jsdom, and fflate are development-only dependencies and are not shipped.
+`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.7.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. Playwright, jsdom, and fflate are development-only dependencies and are not shipped.
 
 ### Architecture
 
@@ -92,6 +92,7 @@ npm run test:browser
 - [Competitive research and product wedge](docs/MARKET_RESEARCH.md)
 - [Productization and acceptance record](docs/PRODUCTIZATION.md)
 - [Chrome Web Store release packet](docs/STORE_LISTING.md)
+- [Privacy-preserving pilot protocol](docs/PILOT.md)
 - [Roadmap](ROADMAP.md)
 - [Chrome Web Store screenshots](store-assets/README.md)
 - [Public privacy disclosure](https://deathcharge.github.io/samsarix-page-lens/) and its [repository source](site/privacy/index.html)

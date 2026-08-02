@@ -8,6 +8,7 @@ button { font: inherit; }
 .header, .footer { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid #2d3150; }
 .footer { border: 0; border-top: 1px solid #2d3150; color: #aaaec8; font-size: 12px; }
 .footer a { color: #b4a5ff; text-decoration: none; }
+.footer-links { display: flex; align-items: center; gap: 10px; }
 .logo { display: flex; gap: 8px; align-items: center; font-weight: 750; letter-spacing: -.01em; }
 .local-badge { padding: 4px 7px; border: 1px solid #4a8b72; border-radius: 99px; color: #8ce2bd; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .content { padding: 18px; }

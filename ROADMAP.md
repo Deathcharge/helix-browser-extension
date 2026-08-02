@@ -7,7 +7,7 @@ This roadmap separates four gates: merge, release, publication, and flagship ado
 Portfolio role: **integration or extension**. Keep its platform-specific packaging and release lifecycle separate. Any flagship integration should use a documented HTTP, event, or package contract with explicit auth, privacy, and failure ownership.
 Planned repository identity: `Deathcharge/samsarix-page-lens` (ready).
 
-Current disposition: productization is merged. Version 1.6 develops the private source-triage wedge with saved-baseline comparison, language-honest readability, a local research decision queue, and explicit portable recovery; public release and adoption remain separate decisions.
+Current disposition: productization is merged. Version 1.7 packages the private source-triage wedge for a bounded, privacy-preserving pilot with saved-baseline comparison, language-honest readability, a local research decision queue, explicit portable recovery, and structured voluntary feedback; public release and real-participant adoption remain separate decisions.
 
 ## Stabilize the productized default
 
@@ -27,6 +27,8 @@ Current disposition: productization is merged. Version 1.6 develops the private 
 - Test the exact distributable on its target platform, including failure and upgrade paths.
 - Review permissions, data retention, privacy copy, signing, and store or platform ownership.
 - Release a prerelease to a bounded pilot before broad distribution.
+- [x] Define a bounded pilot protocol with cohorts, representative tasks, privacy rules, explicit thresholds, severity, and an anonymized evidence template.
+- [x] Add a static, structured pilot-feedback route that opens the user's email client without attaching page data or introducing an extension network request.
 
 Current hardening backlog:
 
