@@ -61,7 +61,10 @@ for (const [name, [width, height]] of requiredAssets) {
   if (png.toString('ascii', 12, 16) !== 'IHDR' || png.readUInt32BE(16) !== width || png.readUInt32BE(20) !== height) throw new Error(`${name} has incorrect dimensions`);
 }
 const privacyUrl = 'https://deathcharge.github.io/samsarix-page-lens/';
-const response = await fetch(`${privacyUrl}?submission-check=${Date.now()}`, { headers: { 'cache-control': 'no-cache' } });
+const response = await fetch(`${privacyUrl}?submission-check=${Date.now()}`, {
+  headers: { 'cache-control': 'no-cache' },
+  signal: AbortSignal.timeout(15_000)
+});
 if (!response.ok) throw new Error(`Privacy disclosure returned HTTP ${response.status}`);
 const livePrivacy = Buffer.from(await response.arrayBuffer());
 const sourcePrivacy = await readFile(resolve(root, 'site/privacy/index.html'));
