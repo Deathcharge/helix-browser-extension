@@ -39,6 +39,9 @@ async function screenshotPopup(page, file) {
     if (snapshot.text.includes('private form value')) throw new Error('Extractor included form content');
     if (snapshot.author !== 'Samsarix Research' || snapshot.sources.length !== 1) throw new Error('Extractor missed provenance metadata');
     const popup = await context.newPage(); await popup.goto(`chrome-extension://${extensionId}/popup.html`); await popup.getByText('Samsarix Page Lens').waitFor();
+    const pilotFeedbackHref = await popup.locator('#pilot-feedback').getAttribute('href');
+    if (!pilotFeedbackHref?.startsWith('mailto:support@samsarix.com?subject=Page%20Lens%201.7%20pilot%20feedback') || !pilotFeedbackHref.includes('do%20not%20include%20private%20page%20URLs')) throw new Error('Pilot feedback route is missing its privacy-safe structured prompt');
+    if (/example\.test|page-url/i.test(pilotFeedbackHref.replace('page%20URLs', ''))) throw new Error('Pilot feedback route unexpectedly contains page-specific data');
     await popup.getByRole('button', { name: 'Import backup' }).waitFor();
     if (!await popup.getByRole('button', { name: 'Backup JSON' }).isDisabled()) throw new Error('Empty queue allowed an empty backup export');
     const migrated = await popup.evaluate(async () => {
