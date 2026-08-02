@@ -17,14 +17,20 @@ Source signals describe what the page exposes. They do **not** establish factual
 
 Status: **1.7 bounded-pilot candidate for unpacked-extension evaluation.** Chrome Web Store publication and real-participant validation are not yet complete.
 
+## Join the bounded pilot
+
+Page Lens needs 8–12 consenting participants who make real source-reading decisions. Researchers, analysts, writers, journalists, educators, students, and independent knowledge workers are all useful perspectives. The pilot uses the unsigned [v1.7.0-pilot.1 prerelease](https://github.com/Deathcharge/samsarix-page-lens/releases/tag/v1.7.0-pilot.1) and takes place over one initial session plus one return use 2–7 days later.
+
+Read the [pilot protocol](docs/PILOT.md), then [email support@samsarix.com to volunteer](mailto:support@samsarix.com?subject=Page%20Lens%201.7%20pilot%20volunteer&body=I%20would%20like%20to%20volunteer%20for%20the%20Page%20Lens%201.7%20bounded%20pilot.%0A%0ACohort%20%28research%2Fanalysis%2C%20writing%2Fjournalism%2C%20education%2Fstudent%2C%20or%20independent%20knowledge%20work%29%3A%0ABrowser%20and%20operating%20system%3A%0ARelevant%20source-triage%20use%20case%20%28do%20not%20include%20private%20URLs%20or%20confidential%20content%29%3A). Do not send page URLs, browsing history, source contents, screenshots, queue exports, or private notes. Participation is voluntary; positive feedback is neither expected nor rewarded.
+
 ## Install and try it
 
 Prerequisites: Chrome or Chromium with Manifest V3 support. Node.js 24+ is needed only for development and release verification.
 
-1. Clone or download this repository.
+1. For ordinary development, clone this repository. Pilot participants instead download and extract `samsarix-page-lens-1.7.0.zip` from the pinned prerelease and verify SHA-256 `67BAFCADE5B374C17E03347BCEDD473AA3E7AACB3041054B402E13F6105EBEB4`.
 2. Open `chrome://extensions`.
 3. Enable **Developer mode**.
-4. Choose **Load unpacked** and select `extension`.
+4. Choose **Load unpacked** and select `extension` for a source checkout, or the extracted pilot ZIP directory for the pinned prerelease.
 5. Open a normal HTTP or HTTPS article, select the extension icon, and choose **Create page brief**.
 
 Chrome blocks extensions from reading internal pages such as `chrome://extensions` and the Chrome Web Store. The popup explains this when encountered.
