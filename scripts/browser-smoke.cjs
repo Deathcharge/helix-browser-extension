@@ -43,7 +43,7 @@ async function screenshotPopup(page, file) {
     if (!pilotFeedbackHref?.startsWith('mailto:support@samsarix.com?subject=Page%20Lens%201.7%20pilot%20feedback') || !pilotFeedbackHref.includes('do%20not%20include%20private%20page%20URLs')) throw new Error('Pilot feedback route is missing its privacy-safe structured prompt');
     if (/example\.test|page-url/i.test(pilotFeedbackHref.replace('page%20URLs', ''))) throw new Error('Pilot feedback route unexpectedly contains page-specific data');
     await popup.getByRole('button', { name: 'Import backup' }).waitFor();
-    if (!await popup.getByRole('button', { name: 'Backup JSON' }).isDisabled()) throw new Error('Empty queue allowed an empty backup export');
+    await popup.waitForFunction(() => document.querySelector('#queue-json-btn')?.disabled === true, null, { timeout: 10000 });
     const migrated = await popup.evaluate(async () => {
       await chrome.storage.local.set({ history: [{ schemaVersion: 1, url: 'https://legacy.example/report?token=private#fragment', title: 'Legacy brief', wordCount: 50, readingMinutes: 1, analyzedAt: '2026-01-01', scores: { readability: 70, structure: 60, evidence: 90 }, counts: { headings: 2, paragraphs: 3, links: 1, citations: 0 }, keywords: [{ term: 'legacy', count: 2 }], excerpt: 'Legacy preview' }] });
       await updateHistory();
