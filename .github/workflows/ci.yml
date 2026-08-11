@@ -18,4 +18,9 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run check
-      - run: npm run release:verify
+      - name: Verify submission structure and disclosure source
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        run: npm run release:verify:offline
+      - name: Verify submission against the live disclosure
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npm run release:verify

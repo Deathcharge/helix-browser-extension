@@ -260,4 +260,5 @@ Local release evidence for 1.8:
 - The packaged Chromium journey passes migration, analysis, review, comparison, queue recovery, export, language handling, and cleanup with the new CSP installed.
 - Two independent builds produced `dist/samsarix-page-lens-1.8.0.zip` at SHA-256 `22698A4AB729D3A62F4D34810EF399EA083723E6B346187B2CC94F16EA18F4D1` (26,205 bytes).
 - The internal [security review record](SECURITY_REVIEW.md) documents scope, findings, remediation, verification, and limitations.
+- Pull requests audit the complete submission structure and committed disclosure offline; `main` additionally requires a byte-for-byte match with the deployed privacy page, avoiding publication of unreviewed PR content.
 - Exact PR, merge, CI, privacy deployment, and GitHub prerelease evidence will be recorded at release handoff.

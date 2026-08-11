@@ -23,6 +23,6 @@ The review also added defense in depth: extension pages now enforce an explicit 
 - Manifest, JavaScript, privacy, and workflow policy checks: passed.
 - Deterministic clean build: passed.
 - Installed-extension Chromium journey: passed.
-- Release-submission audit and live privacy byte comparison: required again after the 1.8 disclosure is deployed.
+- Offline release-submission audit: passed. The live privacy byte comparison remains mandatory on `main` and must pass after the 1.8 disclosure is deployed.
 
 Security reports should be sent privately to [support@samsarix.com](mailto:support@samsarix.com) without private page content, credentials, or personal data.

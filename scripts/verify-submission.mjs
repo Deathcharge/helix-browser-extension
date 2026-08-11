@@ -6,6 +6,9 @@ import { relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { unzipSync } from 'fflate';
 
+const argumentsList = process.argv.slice(2);
+if (argumentsList.some(argument => argument !== '--skip-live-privacy')) throw new Error(`Unknown argument: ${argumentsList.join(' ')}`);
+const skipLivePrivacy = argumentsList.includes('--skip-live-privacy');
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const extensionDirectory = resolve(root, 'dist/samsarix-page-lens');
 const manifest = JSON.parse(await readFile(resolve(extensionDirectory, 'manifest.json'), 'utf8'));
@@ -65,14 +68,16 @@ for (const [name, [width, height]] of requiredAssets) {
   if (png.toString('ascii', 12, 16) !== 'IHDR' || png.readUInt32BE(16) !== width || png.readUInt32BE(20) !== height) throw new Error(`${name} has incorrect dimensions`);
 }
 const privacyUrl = 'https://deathcharge.github.io/samsarix-page-lens/';
-const response = await fetch(`${privacyUrl}?submission-check=${Date.now()}`, {
-  headers: { 'cache-control': 'no-cache' },
-  signal: AbortSignal.timeout(15_000)
-});
-if (!response.ok) throw new Error(`Privacy disclosure returned HTTP ${response.status}`);
-const livePrivacy = Buffer.from(await response.arrayBuffer());
 const sourcePrivacy = await readFile(resolve(root, 'site/privacy/index.html'));
-if (!livePrivacy.equals(sourcePrivacy)) throw new Error('Live privacy disclosure does not match the reviewed repository source');
+if (!skipLivePrivacy) {
+  const response = await fetch(`${privacyUrl}?submission-check=${Date.now()}`, {
+    headers: { 'cache-control': 'no-cache' },
+    signal: AbortSignal.timeout(15_000)
+  });
+  if (!response.ok) throw new Error(`Privacy disclosure returned HTTP ${response.status}`);
+  const livePrivacy = Buffer.from(await response.arrayBuffer());
+  if (!livePrivacy.equals(sourcePrivacy)) throw new Error('Live privacy disclosure does not match the reviewed repository source');
+}
 
 const sha256 = value => createHash('sha256').update(value).digest('hex').toUpperCase();
 const report = {
@@ -83,6 +88,7 @@ const report = {
   archiveSha256: sha256(archive),
   privacyUrl,
   privacySha256: sha256(sourcePrivacy),
+  livePrivacyVerified: !skipLivePrivacy,
   permissions: manifest.permissions,
   packagedFiles: names
 };

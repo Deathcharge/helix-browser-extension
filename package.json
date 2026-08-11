@@ -12,6 +12,7 @@
     "build": "node scripts/build.mjs",
     "build:store-assets": "npm run build && node scripts/browser-smoke.cjs --store-assets && node scripts/store-assets.cjs",
     "release:verify": "npm run build && node scripts/verify-submission.mjs",
+    "release:verify:offline": "npm run build && node scripts/verify-submission.mjs --skip-live-privacy",
     "verify:privacy-live": "node scripts/verify-live-privacy.mjs",
     "test:browser": "node scripts/browser-smoke.cjs"
   },
