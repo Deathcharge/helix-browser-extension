@@ -43,3 +43,36 @@ test('extractor excludes private subtrees and caps unique source domains', { con
   assert.doesNotMatch(result.text, /private/);
   assert.match(result.text, /Visible article text/);
 });
+
+test('extractor skips excluded primary roots and body metadata', { concurrency: false }, () => {
+  const result = extract(`
+    <main hidden><p>hidden primary secret</p></main>
+    <form><article><p>form article secret</p></article><span rel="author">hidden author</span></form>
+    <main><p>Visible primary article text</p></main>
+  `);
+  assert.match(result.text, /Visible primary article text/);
+  assert.doesNotMatch(result.text, /secret/);
+  assert.equal(result.author, '');
+
+  const headMetadata = extract('<head><meta name="author" content="Public Author"></head><body><main><p>Visible article text</p></main></body>');
+  assert.equal(headMetadata.author, 'Public Author');
+});
+
+test('extractor bounds secondary fields before returning the snapshot', { concurrency: false }, () => {
+  const longSource = `https://source.example/${'x'.repeat(5000)}`;
+  const result = extract(`
+    <head><title>${'t'.repeat(500)}</title><meta name="description" content="${'d'.repeat(500)}"></head>
+    <body><main>
+      <h1>${'h'.repeat(500)}</h1>
+      <p>Visible article text with enough content for extraction.</p>
+      <a href="https://source.example/report">${'l'.repeat(500)}</a>
+      <a href="${longSource}">Oversized source</a>
+    </main></body>
+  `);
+  assert.equal(result.title.length, 300);
+  assert.equal(result.description.length, 300);
+  assert.equal(result.outline[0].length, 160);
+  assert.equal(result.sources[0].label.length, 120);
+  assert.equal(result.sources.length, 1);
+  assert.equal(result.truncated, true);
+});

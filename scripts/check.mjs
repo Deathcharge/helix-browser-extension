@@ -49,6 +49,8 @@ if (packageJson.license !== 'MPL-2.0') throw new Error('package.json must declar
 const expectedPermissions = ['activeTab', 'scripting', 'storage'];
 if (JSON.stringify([...(manifest.permissions || [])].sort()) !== JSON.stringify(expectedPermissions.sort())) throw new Error('Permission set changed; document and test any permission change');
 if (manifest.host_permissions || manifest.content_scripts || manifest.background) throw new Error('Broad or always-on extension access is not allowed');
+const expectedCsp = "default-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none';";
+if (manifest.content_security_policy?.extension_pages !== expectedCsp) throw new Error('Extension pages must retain the reviewed local-only content security policy');
 const actionRefs = workflows.flatMap(item => [...item.source.matchAll(/uses:\s*[^@\s]+@([^\s#]+)/g)].map(match => match[1]));
 if (!actionRefs.length || actionRefs.some(ref => !/^[a-f0-9]{40}$/.test(ref))) throw new Error('GitHub Actions must be pinned to immutable full commit SHAs');
 if (workflows.flatMap(item => checkoutSteps(item.source)).some(step => !/^\s+persist-credentials:\s*false\s*(?:#.*)?$/m.test(step))) throw new Error('Every workflow checkout step must disable persisted credentials');

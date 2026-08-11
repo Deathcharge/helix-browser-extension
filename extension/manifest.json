@@ -1,10 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Samsarix Page Lens",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Create a private source-triage brief for HTTP(S) webpages—reading effort, structure, and provenance signals.",
   "homepage_url": "https://samsarix.com",
   "permissions": ["activeTab", "scripting", "storage"],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none';"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

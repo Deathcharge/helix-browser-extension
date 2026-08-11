@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright 2026 Samsarix LLC
 import { createHash } from 'node:crypto';
-import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { lstat, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { unzipSync } from 'fflate';
 
+const argumentsList = process.argv.slice(2);
+if (argumentsList.some(argument => argument !== '--skip-live-privacy')) throw new Error(`Unknown argument: ${argumentsList.join(' ')}`);
+const skipLivePrivacy = argumentsList.includes('--skip-live-privacy');
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const extensionDirectory = resolve(root, 'dist/samsarix-page-lens');
 const manifest = JSON.parse(await readFile(resolve(extensionDirectory, 'manifest.json'), 'utf8'));
@@ -24,6 +27,8 @@ if (JSON.stringify(names) !== JSON.stringify(expected)) {
 }
 if (manifest.manifest_version !== 3) throw new Error('Submission must use Manifest V3');
 if (JSON.stringify([...(manifest.permissions || [])].sort()) !== JSON.stringify(['activeTab', 'scripting', 'storage'])) throw new Error('Submission permission set is not approved');
+const expectedCsp = "default-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none';";
+if (manifest.content_security_policy?.extension_pages !== expectedCsp) throw new Error('Submission does not enforce the reviewed local-only content security policy');
 for (const forbidden of ['host_permissions', 'optional_host_permissions', 'content_scripts', 'background', 'externally_connectable']) {
   if (forbidden in manifest) throw new Error(`Submission unexpectedly declares ${forbidden}`);
 }
@@ -32,6 +37,8 @@ async function diskFiles(directory) {
   const result = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const path = resolve(directory, entry.name);
+    const information = await lstat(path);
+    if (information.isSymbolicLink() || (!information.isDirectory() && !information.isFile())) throw new Error(`Submission contains a non-regular entry: ${path}`);
     if (entry.isDirectory()) result.push(...await diskFiles(path));
     else result.push(path);
   }
@@ -61,14 +68,16 @@ for (const [name, [width, height]] of requiredAssets) {
   if (png.toString('ascii', 12, 16) !== 'IHDR' || png.readUInt32BE(16) !== width || png.readUInt32BE(20) !== height) throw new Error(`${name} has incorrect dimensions`);
 }
 const privacyUrl = 'https://deathcharge.github.io/samsarix-page-lens/';
-const response = await fetch(`${privacyUrl}?submission-check=${Date.now()}`, {
-  headers: { 'cache-control': 'no-cache' },
-  signal: AbortSignal.timeout(15_000)
-});
-if (!response.ok) throw new Error(`Privacy disclosure returned HTTP ${response.status}`);
-const livePrivacy = Buffer.from(await response.arrayBuffer());
 const sourcePrivacy = await readFile(resolve(root, 'site/privacy/index.html'));
-if (!livePrivacy.equals(sourcePrivacy)) throw new Error('Live privacy disclosure does not match the reviewed repository source');
+if (!skipLivePrivacy) {
+  const response = await fetch(`${privacyUrl}?submission-check=${Date.now()}`, {
+    headers: { 'cache-control': 'no-cache' },
+    signal: AbortSignal.timeout(15_000)
+  });
+  if (!response.ok) throw new Error(`Privacy disclosure returned HTTP ${response.status}`);
+  const livePrivacy = Buffer.from(await response.arrayBuffer());
+  if (!livePrivacy.equals(sourcePrivacy)) throw new Error('Live privacy disclosure does not match the reviewed repository source');
+}
 
 const sha256 = value => createHash('sha256').update(value).digest('hex').toUpperCase();
 const report = {
@@ -79,6 +88,7 @@ const report = {
   archiveSha256: sha256(archive),
   privacyUrl,
   privacySha256: sha256(sourcePrivacy),
+  livePrivacyVerified: !skipLivePrivacy,
   permissions: manifest.permissions,
   packagedFiles: names
 };
