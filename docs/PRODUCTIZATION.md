@@ -261,4 +261,7 @@ Local release evidence for 1.8:
 - Two independent builds produced `dist/samsarix-page-lens-1.8.0.zip` at SHA-256 `22698A4AB729D3A62F4D34810EF399EA083723E6B346187B2CC94F16EA18F4D1` (26,205 bytes).
 - The internal [security review record](SECURITY_REVIEW.md) documents scope, findings, remediation, verification, and limitations.
 - Pull requests audit the complete submission structure and committed disclosure offline; `main` additionally requires a byte-for-byte match with the deployed privacy page, avoiding publication of unreviewed PR content.
-- Exact PR, merge, CI, privacy deployment, and GitHub prerelease evidence will be recorded at release handoff.
+- Release PR [#17](https://github.com/Deathcharge/samsarix-page-lens/pull/17) merged as `ec277108e298665f206c96608f5973071caacc6a` after both exact-head CI runs (`31456396289` and `31456398574`) passed.
+- Post-merge `main` CI run `31456588012` passed the complete gate, including the live disclosure match. Privacy deployment run `31456597359` published the same commit and passed its post-deployment byte verification.
+- The reviewed disclosure and live HTTPS response share SHA-256 `CAFC7BF76477C6501F232AE32642422FA29E93BCAFE44646EA92468318BC7A60`.
+- GitHub prerelease [`v1.8.0-pilot.1`](https://github.com/Deathcharge/samsarix-page-lens/releases/tag/v1.8.0-pilot.1) targets the merge commit. GitHub reports the uploaded 26,205-byte ZIP digest as `22698A4AB729D3A62F4D34810EF399EA083723E6B346187B2CC94F16EA18F4D1`. Version 1.7 is retained as superseded historical evidence.
