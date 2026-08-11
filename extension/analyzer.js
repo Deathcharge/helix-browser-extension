@@ -59,6 +59,15 @@
   function escapeMarkdown(value) {
     return String(value ?? '').replace(/([\\`*_{}\[\]()<>#+\-.!|])/g, '\\$1').replace(/\r?\n/g, ' ');
   }
+  function markdownUrl(value) {
+    return sanitizeUrl(value)
+      .replace(/\\/g, '%5C')
+      .replace(/\(/g, '%28')
+      .replace(/\)/g, '%29')
+      .replace(/!/g, '%21')
+      .replace(/\[/g, '%5B')
+      .replace(/\]/g, '%5D');
+  }
   function analyzePage(snapshot) {
     const text = String(snapshot.text || '').replace(/\s+/g, ' ').trim();
     const tokens = words(text);
@@ -132,17 +141,17 @@
     const keywords = comparison.sharedKeywords?.length ? comparison.sharedKeywords.map(term => `- ${escapeMarkdown(term)}`).join('\n') : '- None';
     const readability = comparison.deltas.readability == null ? 'Not comparable' : signed(comparison.deltas.readability);
     const provenance = comparison.deltas.provenance == null ? 'Not comparable' : signed(comparison.deltas.provenance);
-    return `# Page brief comparison\n\nBaseline: [${escapeMarkdown(comparison.baseline.title)}](${sanitizeUrl(comparison.baseline.url)})\n\nCurrent: [${escapeMarkdown(comparison.current.title)}](${sanitizeUrl(comparison.current.url)})\n\n## Current minus baseline\n\n- Words: ${signed(comparison.deltas.wordCount)}\n- Reading time: ${signed(comparison.deltas.readingMinutes)} min\n- Readability: ${readability}\n- Structure: ${signed(comparison.deltas.structure)}\n- Source signals: ${provenance}\n- External domains: ${signed(comparison.deltas.externalDomains)}\n- Citation signals: ${signed(comparison.deltas.citations)}\n\n## Shared source domains\n\n${domains}\n\n## Shared frequent terms\n\n${keywords}\n\n> Descriptive local comparison only—not a factuality, credibility, or quality judgment.\n`;
+    return `# Page brief comparison\n\nBaseline: [${escapeMarkdown(comparison.baseline.title)}](${markdownUrl(comparison.baseline.url)})\n\nCurrent: [${escapeMarkdown(comparison.current.title)}](${markdownUrl(comparison.current.url)})\n\n## Current minus baseline\n\n- Words: ${signed(comparison.deltas.wordCount)}\n- Reading time: ${signed(comparison.deltas.readingMinutes)} min\n- Readability: ${readability}\n- Structure: ${signed(comparison.deltas.structure)}\n- Source signals: ${provenance}\n- External domains: ${signed(comparison.deltas.externalDomains)}\n- Citation signals: ${signed(comparison.deltas.citations)}\n\n## Shared source domains\n\n${domains}\n\n## Shared frequent terms\n\n${keywords}\n\n> Descriptive local comparison only—not a factuality, credibility, or quality judgment.\n`;
   }
   function toMarkdown(result) {
-    const sourceLines = result.sources?.length ? result.sources.map(source => `- [${escapeMarkdown(source.host)}](${sanitizeUrl(source.url)})${source.label ? ` — ${escapeMarkdown(source.label)}` : ''}`).join('\n') : '- None detected';
+    const sourceLines = result.sources?.length ? result.sources.map(source => `- [${escapeMarkdown(source.host)}](${markdownUrl(source.url)})${source.label ? ` — ${escapeMarkdown(source.label)}` : ''}`).join('\n') : '- None detected';
     const signalLines = result.provenanceSignals?.map(signal => `- ${signal.present ? '✓' : '○'} ${escapeMarkdown(signal.label)}: ${escapeMarkdown(signal.detail)}`).join('\n') || '';
     const readability = result.readabilityAvailable === false ? (result.readabilityBasis === 'undeclared-language' ? 'Not available (page language undeclared)' : `Not available for ${escapeMarkdown(result.language || 'this language')}`) : `${result.scores.readability}/100`;
     const sourceScore = result.sourceSignalsAvailable === false ? 'Not analyzed' : `${result.scores.provenance}/100`;
     const review = normalizeReview(result.review);
     const decisionLabels = { 'read-deeper': 'Read deeper', reference: 'Keep as reference', skip: 'Skip' };
     const reviewSection = review.decision || review.note ? `\n\n## Private review\n\n- Decision: ${decisionLabels[review.decision] || 'Not decided'}${review.note ? `\n- Note: ${escapeMarkdown(review.note)}` : ''}` : '';
-    return `# ${escapeMarkdown(result.title)}\n\n${result.url ? `Source: ${sanitizeUrl(result.url)}\n\n` : ''}Analyzed locally: ${escapeMarkdown(result.analyzedAt)}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${readability}\n- Structure: ${result.scores.structure}/100\n- Source signals: ${sourceScore}${reviewSection}\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${escapeMarkdown(item.term)}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
+    return `# ${escapeMarkdown(result.title)}\n\n${result.url ? `Source: ${markdownUrl(result.url)}\n\n` : ''}Analyzed locally: ${escapeMarkdown(result.analyzedAt)}\n\n## Reading brief\n\n- ${result.wordCount} words · ${result.readingMinutes} min read\n- Readability: ${readability}\n- Structure: ${result.scores.structure}/100\n- Source signals: ${sourceScore}${reviewSection}\n\n## Provenance signals\n\n${signalLines}\n\n## Frequent terms\n\n${result.keywords.map(item => `- ${escapeMarkdown(item.term)}: ${item.count}`).join('\n')}\n\n## External source domains\n\n${sourceLines}\n\n> Scores are transparent indicators, not factuality, credibility, or quality judgments.\n`;
   }
   const QUEUE_FORMAT = 'samsarix-page-lens-queue';
   function queueIdentity(item) { return item.url || `${item.title}\n${item.analyzedAt}`; }

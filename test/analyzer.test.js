@@ -56,6 +56,24 @@ test('Markdown export escapes page-derived control characters', () => {
   assert.match(markdown, /\(https:\/\/actual\.example\/report\)/);
   assert.doesNotMatch(markdown, /secret=/);
 });
+test('Markdown export encodes control characters inside URL destinations', () => {
+  const maliciousPath = 'path)![track](https://attacker.example/pixel';
+  const result = analyzePage({
+    ...sample,
+    url: `https://page.example/${maliciousPath}`,
+    sources: [{ url: `https://source.example/${maliciousPath}`, label: 'Legitimate source' }]
+  });
+  const markdown = toMarkdown(result);
+  assert.doesNotMatch(markdown, /\)!\[track\]\(https:\/\/attacker\.example/);
+  assert.match(markdown, /path%29%21%5Btrack%5D%28https:\/\/attacker\.example\/pixel/);
+
+  const comparison = toComparisonMarkdown(compareBriefs(
+    result,
+    analyzePage({ ...sample, url: `https://baseline.example/${maliciousPath}` })
+  ));
+  assert.doesNotMatch(comparison, /\)!\[track\]\(https:\/\/attacker\.example/);
+  assert.match(comparison, /path%29%21%5Btrack%5D%28https:\/\/attacker\.example\/pixel/);
+});
 test('caps retained excerpt and marks bounded extraction', () => {
   const result = analyzePage({ ...sample, text: 'word '.repeat(100), truncated: true });
   assert.ok(result.excerpt.length <= 280); assert.equal(result.extraction.truncated, true);
