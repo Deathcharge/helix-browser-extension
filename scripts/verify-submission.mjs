@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright 2026 Samsarix LLC
 import { createHash } from 'node:crypto';
-import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { lstat, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { unzipSync } from 'fflate';
@@ -24,6 +24,8 @@ if (JSON.stringify(names) !== JSON.stringify(expected)) {
 }
 if (manifest.manifest_version !== 3) throw new Error('Submission must use Manifest V3');
 if (JSON.stringify([...(manifest.permissions || [])].sort()) !== JSON.stringify(['activeTab', 'scripting', 'storage'])) throw new Error('Submission permission set is not approved');
+const expectedCsp = "default-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none';";
+if (manifest.content_security_policy?.extension_pages !== expectedCsp) throw new Error('Submission does not enforce the reviewed local-only content security policy');
 for (const forbidden of ['host_permissions', 'optional_host_permissions', 'content_scripts', 'background', 'externally_connectable']) {
   if (forbidden in manifest) throw new Error(`Submission unexpectedly declares ${forbidden}`);
 }
@@ -32,6 +34,8 @@ async function diskFiles(directory) {
   const result = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const path = resolve(directory, entry.name);
+    const information = await lstat(path);
+    if (information.isSymbolicLink() || (!information.isDirectory() && !information.isFile())) throw new Error(`Submission contains a non-regular entry: ${path}`);
     if (entry.isDirectory()) result.push(...await diskFiles(path));
     else result.push(path);
   }

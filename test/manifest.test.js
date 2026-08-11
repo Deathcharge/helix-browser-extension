@@ -9,6 +9,7 @@ test('ships a minimal Manifest V3 permission set', () => {
   assert.equal(manifest.host_permissions, undefined);
   assert.equal(manifest.content_scripts, undefined);
   assert.equal(manifest.background, undefined);
+  assert.equal(manifest.content_security_policy.extension_pages, "default-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none';");
 });
 test('ships Samsarix release metadata', () => {
   assert.equal(manifest.name, 'Samsarix Page Lens');
