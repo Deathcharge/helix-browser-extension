@@ -1,6 +1,6 @@
 # Samsarix Page Lens privacy disclosure
 
-Effective: August 1, 2026
+Effective: August 10, 2026
 
 Samsarix Page Lens is developed by Samsarix LLC. The extension does not transmit, sell, share, or remotely process user data. It has no runtime analytics, advertising, account system, remote API, telemetry, or third-party SDK.
 
@@ -8,7 +8,9 @@ Samsarix Page Lens is developed by Samsarix LLC. The extension does not transmit
 
 Only after the user selects **Create page brief**, the extension temporarily processes the active page’s text, title, URL, description, language, headings, paragraphs, links, citation-like markup, visible byline/date metadata, and up to 20 unique external source domains.
 
-Extraction visits at most 15,000 DOM nodes and retains at most 250,000 characters. It skips content inside scripts, styles, navigation, footers, forms, dialogs, templates, and elements explicitly marked with `hidden` or `aria-hidden="true"`. Form values are not inspected. CSS-only hidden text may be encountered because computing full rendered visibility would require substantially more page processing.
+Extraction visits at most 15,000 DOM nodes and retains at most 250,000 article-text characters. Page and source URLs are limited to 4,096 characters; titles and descriptions to 300; author values and outline entries to 160; source labels to 120; and declared-language values to 20. Oversized source URLs are omitted rather than shortened into a different destination.
+
+The extractor skips content inside scripts, styles, navigation, footers, forms, dialogs, templates, and elements explicitly marked with `hidden` or `aria-hidden="true"`. This applies when an excluded element would otherwise be selected as the primary article root or as visible byline/date metadata. Form values are not inspected. CSS-only hidden text may be encountered because computing full rendered visibility would require substantially more page processing.
 
 Processing occurs locally in the browser. Unsaved page text exists only in memory while the extension popup is active.
 

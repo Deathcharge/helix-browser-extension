@@ -244,3 +244,20 @@ Local release evidence for 1.6:
 - `npm audit`: 0 vulnerabilities.
 - Two independent builds produced the same `dist/samsarix-page-lens-1.6.0.zip` SHA-256: `3CB4D25CD60E0D48FF4F71AE5ABCC04A88CEB039925A1B33D8008A0DAE10B2CC`.
 - PR head, merge commit, exact-head CI, and post-merge `main` CI will be recorded at release handoff.
+
+## Samsarix 1.8 security hardening
+
+The release-candidate pass closed three low-severity source-backed issues without changing the local-first product boundary:
+
+- Markdown brief and comparison exports now encode page-controlled URL delimiters for the Markdown destination context.
+- The extractor skips excluded primary roots and body metadata, bounds secondary fields before returning the snapshot, and omits oversized source URLs rather than reinterpreting them.
+- Extension pages enforce an explicit local-only CSP, and release packaging rejects symbolic links and non-regular entries.
+- The permission set remains `activeTab`, `scripting`, and `storage`, with no host permission, background worker, always-on content script, remote code, or runtime network API.
+
+Local release evidence for 1.8:
+
+- All 30 deterministic unit tests pass, including exploit-focused Markdown, hidden-root, hidden-metadata, and oversized-field regressions.
+- The packaged Chromium journey passes migration, analysis, review, comparison, queue recovery, export, language handling, and cleanup with the new CSP installed.
+- Two independent builds produced `dist/samsarix-page-lens-1.8.0.zip` at SHA-256 `22698A4AB729D3A62F4D34810EF399EA083723E6B346187B2CC94F16EA18F4D1` (26,205 bytes).
+- The internal [security review record](SECURITY_REVIEW.md) documents scope, findings, remediation, verification, and limitations.
+- Exact PR, merge, CI, privacy deployment, and GitHub prerelease evidence will be recorded at release handoff.
