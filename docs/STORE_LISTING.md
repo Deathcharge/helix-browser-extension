@@ -29,7 +29,7 @@ No host permissions are requested.
 ## Owner-provided assets and actions
 
 - [ ] Confirm Samsarix LLC owns or has permission to use the product name and supplied icon artwork.
-- [x] Generate and visually review three 1280×800 screenshots in `store-assets/` from the packaged 1.7 browser journey.
+- [x] Generate and visually review three 1280×800 screenshots in `store-assets/` from the packaged 1.8.1 browser journey.
 - [x] Generate and visually review the required 440×280 small promotional tile in `store-assets/`.
 - [x] Prepare the standalone disclosure at `site/privacy/index.html` and a SHA-pinned, owner-triggered GitHub Pages workflow.
 - [x] Publish and byte-verify the disclosure at `https://deathcharge.github.io/samsarix-page-lens/` with HTTPS enforcement; use this URL in the listing.
@@ -43,7 +43,7 @@ No host permissions are requested.
 
 The current runtime performs no network requests and includes no analytics or advertising SDK. Page content is processed ephemerally on-device. User-requested schema-v2 briefs, including optional review decisions and notes capped at 500 characters, are stored locally, capped at 25, and removable. The static pilot-feedback link opens the user's email client with questions and a warning not to include private URLs or confidential content; Page Lens does not send the message itself. Store declarations must be revalidated against the exact submission artifact and current Chrome Web Store questionnaire.
 
-Chrome's user-data policy treats website content, browsing activity, and user-provided content as handled data even when processing and storage never leave the device. Use these conservative dashboard answers for the reviewed 1.7 artifact:
+Chrome's user-data policy treats website content, browsing activity, and user-provided content as handled data even when processing and storage never leave the device. Use these conservative dashboard answers for the 1.8.1 candidate (confirm against the live questionnaire):
 
 - **Single purpose:** Give the user a transparent, on-device reading and structure brief for the active webpage.
 - **Remote code:** No, this extension does not use remote code.
@@ -59,11 +59,11 @@ These answers deliberately disclose local handling rather than interpreting “c
 No account, credentials, payment, server, or special setup is required.
 
 1. Open any ordinary public HTTP(S) article and select the Page Lens toolbar icon.
-2. Select **Analyze this page**. Confirm that the brief shows reading effort, structure, visible source signals, and the sanitized page URL.
-3. Select **Save locally**, choose a review decision, and enter a short note. Reopen the popup and confirm the record remains in the private queue.
-4. Use **Back up queue** and **Queue Markdown**. Import the downloaded JSON only after accepting the replacement/cap warning.
+2. Select **Create page brief**. Confirm that the brief shows reading effort, structure, visible source signals, and the sanitized page URL under **Displayed brief**.
+3. Choose a review decision, enter a short note, then select **Save locally**. Reopen the popup and confirm the record and note remain in the private queue.
+4. Use **Backup JSON** and **Queue Markdown**. Select **Remove** beside one saved record, cancel once to check that nothing changes, then confirm removal. Import the downloaded JSON only after accepting the replacement/cap warning and verify that it restores the removed record.
 5. Analyze a second public article, select the saved source as a baseline, and confirm the local comparison and Markdown export.
-6. Remove the saved records and confirm the empty state.
+6. Remove the last saved record and confirm the empty state and that **Import backup** remains available. **Clear** also removes the full queue after confirmation.
 
 Expected restrictions: Chrome blocks script injection on browser-internal pages and the Chrome Web Store; the popup explains that limitation. Pages without an explicit English language declaration do not receive an English readability score. No test credentials are necessary.
 

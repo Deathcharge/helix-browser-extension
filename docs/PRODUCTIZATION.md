@@ -265,3 +265,26 @@ Local release evidence for 1.8:
 - Post-merge `main` CI run `31456588012` passed the complete gate, including the live disclosure match. Privacy deployment run `31456597359` published the same commit and passed its post-deployment byte verification.
 - The reviewed disclosure and live HTTPS response share SHA-256 `CAFC7BF76477C6501F232AE32642422FA29E93BCAFE44646EA92468318BC7A60`.
 - GitHub prerelease [`v1.8.0-pilot.1`](https://github.com/Deathcharge/samsarix-page-lens/releases/tag/v1.8.0-pilot.1) targets the merge commit. GitHub reports the uploaded 26,205-byte ZIP digest as `22698A4AB729D3A62F4D34810EF399EA083723E6B346187B2CC94F16EA18F4D1`. Version 1.7 is retained as superseded historical evidence.
+
+## 1.8.1 queue lifecycle correction — August 31, 2026
+
+Current-state audit found no new participant evidence in issue #16 and no downloads of the pinned 1.8.0 pilot asset. This does not prove the support inbox is empty; authenticated email/store access is unavailable in this execution environment. The goal's real-use validation gate remains unproven.
+
+Locally actionable gaps:
+
+- **P1:** The pilot's recovery task instructed users to remove one saved record, but the UI only supported clearing all records. Added a separately labeled **Remove** button for each queue entry, explicit confirmation (including loss of unsaved edits to that brief), cancellation, write-failure feedback, keyboard focus recovery, and an empty-queue state that preserves import access.
+- **P1:** Reopening a saved record showed metrics without its own source heading. Added a **Displayed brief** title and sanitized URL while preserving the active-tab analysis target.
+- **P2:** Feedback subjects and screenshot labels still named 1.7; they now derive the actual version from the manifest. Corrected reviewer button names and the note-before-save ordering.
+
+The queue uses the same normalized identity for saving, backup/import, and removal. Removal changes only local extension storage, not downloaded backups. It invalidates a displayed deleted brief and its comparison, while unrelated displayed notes remain untouched. No permissions, runtime network traffic, storage schema, dependencies, or licensing changed.
+
+Verification from a fresh `npm ci`:
+
+- `npm test`: 32/32 tests passed (baseline was 30/30).
+- `npm run check`: policy, syntax, unit, build, and installed-extension Chromium gates passed.
+- The Chromium journey now cancels removal, simulates a failing storage write, deletes by keyboard, restores the actual downloaded backup, removes from a filtered list, preserves another record's unsaved note, and deletes the final record.
+- `npm run build:store-assets`: regenerated all three screenshot compositions; visually reviewed the removal controls and displayed-brief identity.
+- `npm run release:verify`: exact packaged bytes and live privacy disclosure matched. `npm audit --audit-level=low`: 0 known vulnerabilities.
+- Two builds produced the same 27,124-byte `samsarix-page-lens-1.8.1.zip`: SHA-256 `8375BEBD253730000FF3484986ED43AD940316D8F40A297B92FBFCCFED6BC81E`.
+
+The browser harness loads the real unpacked extension and uses actual local storage, dialogs, file import, and downloads, but injects deterministic page snapshots into the popup. It does not prove the manual toolbar `activeTab` grant or Chrome Web Store installation path. Those checks, real participant sessions, monitored support, and owner identity/trademark confirmations remain external release gates. Feature expansion should follow observed pilot needs; it is not a substitute for those gates.
