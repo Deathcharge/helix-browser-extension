@@ -2,6 +2,7 @@
 /* Copyright 2026 Samsarix LLC */
 :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #0d1020; color: #f4f1ff; }
 * { box-sizing: border-box; }
+html { width: 410px; }
 body { width: 410px; min-height: 440px; margin: 0; background: radial-gradient(circle at top right, #272051, #0d1020 52%); }
 button { font: inherit; }
 .popup-container { min-height: 400px; }

@@ -1,12 +1,12 @@
 {
   "name": "samsarix-page-lens",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "private": true,
   "description": "Local-first Chrome page analysis extension",
   "license": "MPL-2.0",
   "author": "Samsarix LLC <contact@samsarix.com>",
   "scripts": {
-    "check": "npm run lint && npm test && npm run build && npm run test:browser",
+    "check": "npm run lint && npm test && npm run build && npm run test:browser && npm run test:native",
     "lint": "node scripts/check.mjs",
     "test": "node --test",
     "build": "node scripts/build.mjs",
@@ -14,7 +14,8 @@
     "release:verify": "npm run build && node scripts/verify-submission.mjs",
     "release:verify:offline": "npm run build && node scripts/verify-submission.mjs --skip-live-privacy",
     "verify:privacy-live": "node scripts/verify-live-privacy.mjs",
-    "test:browser": "node scripts/browser-smoke.cjs"
+    "test:browser": "node scripts/browser-smoke.cjs",
+    "test:native": "node scripts/native-popup-smoke.cjs"
   },
   "devDependencies": {
     "fflate": "0.8.2",

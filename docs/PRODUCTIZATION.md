@@ -307,3 +307,25 @@ Verification from a fresh `npm ci`:
 - `npm run release:verify` verified the exact packaged file list and live privacy bytes. Repeated builds produced the same 28,177-byte ZIP at SHA-256 `8D2F75C93F16B929B0F27AFCEFFA2550FDF7B655B33FF6F9DA1BA2A31522101E`.
 
 Playwright does not expose the native action bubble as a normal Page here, so this permission-path test operates the unchanged popup document in a tab after Chromium grants access. It is not evidence for native toolbar layout, Chrome Web Store installation, or a human session. Later queue/comparison scenarios still use deterministic snapshots. The public pilot issue still records zero enrolled participants; support inbox contents and authenticated store state were not inspected.
+
+## 1.8.3 native action-window verification — August 31, 2026
+
+The previous turn shipped 1.8.2 through PR #20 at `c05c3d7acf5402a0fbda2e57b7a7dd6bdb673662`; post-merge CI `33381045496` passed and GitHub's uploaded artifact digest matched the recorded ZIP. This follow-up closes the native-popup automation gap described above, not the human-pilot or signed-store gates.
+
+Inspection of the pinned Playwright 1.62.1 implementation identified its internal `PW_CHROMIUM_ATTACH_TO_OTHER` capability. A separate test process enables it only for its disposable Chromium profile, allowing the real extension-action window to be driven through Playwright after the official CDP action command. The test asserts Chrome recognizes the view as a popup and that `chrome.tabs.getCurrent()` returns no tab; it never navigates a tab to `popup.html`, injects a result, calls the popup's internal functions, or overrides viewport sizing. Dependency upgrades must preserve this test; the internal flag is not a supported production API.
+
+**P2 layout defect reproduced and fixed:** the native action window initially measured 410px wide, then expanded to 649px after analysis while its body stayed 410px wide, producing a large empty region. Setting the root document width as well as the body width keeps the native window at 425px including the Windows scrollbar, with a 410px body and no horizontal overflow. The new layout assertion fails against the original CSS and passes with the fix. The runtime change is one CSS rule; permissions, storage, licensing, and network behavior are unchanged.
+
+`npm run test:native`, now part of `npm run check`, covers:
+
+- two real DOM fixture pages analyzed through the native **Create page brief** button and actual script injection;
+- note/decision saving, closing the action window, reopening it through the extension action, and retained values;
+- the downloaded queue backup, canceled and confirmed removal, and restoration from that actual file;
+- a second source compared with the saved baseline and a real sanitized Markdown download;
+- natural popup bounds after analysis, reopening, and comparison, plus uncaught page errors.
+
+Verification from fresh `npm ci`: `npm run check` passed all 39 unit tests, the existing permission/queue browser journey, and the native-popup journey on Chromium 151.0.7922.34. The native screenshot at `output/playwright/native-popup-analysis.png` was visually reviewed. The test uses a bounded 90-second failure deadline and cleans up its own temporary browser profile.
+
+`npm run build:store-assets` regenerated all three 1280×800 compositions, which were visually reviewed. `npm run release:verify` passed the exact ZIP/file and live privacy checks; `npm audit --audit-level=low` reported zero known vulnerabilities. Repeated builds produced the same 28,182-byte `samsarix-page-lens-1.8.3.zip`, SHA-256 `6B32B111B40552F6FCEC840711344B2BC0FEE19E74E6957E6B06B6346A04FA83`.
+
+The native test exercises a real browser window but remains automated fixture evidence. The local file input is supplied by the harness; the operating-system file-picker dialog, manual interaction on supported user setups, signed-store installation, and real participant sessions remain unverified. The public pilot still shows 0 enrolled participants and no human comments; no claim is made about unread support email. Priorities are participant recruitment/return-use evidence, owner identity/support and store confirmations, then changes grounded in observed pilot problems rather than speculative feature expansion.

@@ -10,4 +10,4 @@ npx playwright install chromium
 npm run build:store-assets
 ```
 
-The generator uses no remote fonts or imagery. The embedded product UI comes from the packaged 1.8.2 browser journey; surrounding copy is maintained in `scripts/store-assets.cjs`. Before submission, the store owner must review every image against the exact uploaded ZIP and current Chrome Web Store image/content policies.
+The generator uses no remote fonts or imagery. The embedded product UI comes from the packaged 1.8.3 browser journey; surrounding copy is maintained in `scripts/store-assets.cjs`. Before submission, the store owner must review every image against the exact uploaded ZIP and current Chrome Web Store image/content policies.
