@@ -175,6 +175,12 @@
     return { briefs, skipped: value.briefs.length - briefs.length };
   }
   function mergeQueueHistory(imported, existing) { return normalizeQueue([...(Array.isArray(imported) ? imported : []), ...(Array.isArray(existing) ? existing : [])]); }
+  function removeQueueBrief(items, target) {
+    const brief = migrateStoredResult(target);
+    if (!brief) throw new Error('Choose a valid saved brief to remove.');
+    const identity = queueIdentity(brief);
+    return normalizeQueue(items).filter(item => queueIdentity(item) !== identity);
+  }
   function toQueueMarkdown(items) {
     const briefs = normalizeQueue(items);
     const body = briefs.length ? briefs.map(toMarkdown).join('\n---\n\n') : '_No saved briefs._\n';
@@ -218,5 +224,5 @@
       methodology: legacy ? 'Legacy brief migrated with private URL components removed. Reanalyze the page to collect source signals.' : String(item.methodology || '').slice(0, 300)
     };
   }
-  return { analyzePage, compareBriefs, createQueueBackup, escapeMarkdown, mergeQueueHistory, migrateStoredResult, normalizeReview, parseQueueBackup, sanitizeUrl, syllables, toComparisonMarkdown, toMarkdown, toQueueMarkdown, topKeywords };
+  return { analyzePage, compareBriefs, createQueueBackup, escapeMarkdown, mergeQueueHistory, migrateStoredResult, normalizeReview, parseQueueBackup, removeQueueBrief, sanitizeUrl, syllables, toComparisonMarkdown, toMarkdown, toQueueMarkdown, topKeywords };
 });
