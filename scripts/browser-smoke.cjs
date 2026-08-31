@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { chromium } = require('playwright');
 const { extractPage } = require('../extension/extractor.js');
+const assert = require('node:assert/strict');
 const captureStoreAssets = process.argv.includes('--store-assets');
 const progressFile = path.resolve('output/browser-smoke-progress.txt');
 function checkpoint(message) { fs.mkdirSync(path.dirname(progressFile), { recursive: true }); fs.appendFileSync(progressFile, `${new Date().toISOString()} ${message}\n`); console.log(message); }
@@ -39,8 +40,13 @@ async function screenshotPopup(page, file) {
     if (snapshot.text.includes('private form value')) throw new Error('Extractor included form content');
     if (snapshot.author !== 'Samsarix Research' || snapshot.sources.length !== 1) throw new Error('Extractor missed provenance metadata');
     const popup = await context.newPage(); await popup.goto(`chrome-extension://${extensionId}/popup.html`); await popup.getByText('Samsarix Page Lens').waitFor();
+    await popup.waitForFunction(() => document.querySelector('#queue-json-btn')?.disabled === true, null, { timeout: 10000 });
     const pilotFeedbackHref = await popup.locator('#pilot-feedback').getAttribute('href');
-    if (!pilotFeedbackHref?.startsWith('mailto:support@samsarix.com?subject=Page%20Lens%201.7%20pilot%20feedback') || !pilotFeedbackHref.includes('do%20not%20include%20private%20page%20URLs')) throw new Error('Pilot feedback route is missing its privacy-safe structured prompt');
+    const feedbackUrl = new URL(pilotFeedbackHref);
+    const version = await popup.evaluate(() => chrome.runtime.getManifest().version);
+    assert.equal(feedbackUrl.pathname, 'support@samsarix.com');
+    assert.equal(feedbackUrl.searchParams.get('subject'), `Page Lens ${version} pilot feedback`);
+    assert.match(feedbackUrl.searchParams.get('body'), /do not include private page URLs/);
     if (/example\.test|page-url/i.test(pilotFeedbackHref.replace('page%20URLs', ''))) throw new Error('Pilot feedback route unexpectedly contains page-specific data');
     await popup.getByRole('button', { name: 'Import backup' }).waitFor();
     await popup.waitForFunction(() => document.querySelector('#queue-json-btn')?.disabled === true, null, { timeout: 10000 });
@@ -52,8 +58,11 @@ async function screenshotPopup(page, file) {
     if (migrated.url !== 'https://legacy.example/report' || migrated.sourceSignalsAvailable !== false) throw new Error('Legacy history was not privacy-migrated');
     checkpoint('Browser smoke: legacy migration passed.');
     await popup.getByRole('button', { name: /Open saved brief: Legacy brief/ }).click();
+    assert.equal(await popup.locator('#brief-title').textContent(), 'Legacy brief');
+    assert.equal(await popup.locator('#brief-url').textContent(), 'https://legacy.example/report');
     await popup.locator('#migration-note').waitFor();
-    const result = await popup.evaluate(snapshot => { const analyzed = SamsarixAnalyzer.analyzePage(snapshot); display(analyzed); $('page-title').textContent = analyzed.title; $('page-url').textContent = analyzed.url; return analyzed; }, snapshot);
+    const result = await popup.evaluate(snapshot => { const analyzed = SamsarixAnalyzer.analyzePage(snapshot); display(analyzed); return analyzed; }, snapshot);
+    assert.equal(await popup.locator('#brief-title').textContent(), 'Research Signals');
     if (result.url.includes('?') || result.sources[0].url.includes('?')) throw new Error('Result retained private URL parameters');
     await popup.getByText('Provenance checklist', { exact: true }).waitFor(); await popup.locator('#byline').getByText('Samsarix Research').waitFor();
     await popup.locator('#review-decision').selectOption('read-deeper'); await popup.locator('#review-note').fill('Verify the primary source before citing.');
@@ -95,6 +104,43 @@ async function screenshotPopup(page, file) {
     const queueBackup = JSON.parse(fs.readFileSync(await queueDownload.path(), 'utf8'));
     if (queueBackup.format !== 'samsarix-page-lens-queue' || queueBackup.briefs.length !== 2) throw new Error('Queue backup did not contain the saved research queue');
     await queueDownload.delete();
+    const readHistory = () => popup.evaluate(async () => (await chrome.storage.local.get({ history: [] })).history);
+    const beforeRemoval = await readHistory();
+    popup.once('dialog', dialog => dialog.dismiss());
+    await popup.getByRole('button', { name: 'Remove saved brief: Research Signals', exact: true }).click();
+    await popup.getByText('Removal canceled. The local queue was not changed.').waitFor();
+    assert.deepEqual(await readHistory(), beforeRemoval);
+    assert.equal(await popup.locator('#brief-title').textContent(), 'Research Signals');
+    await popup.evaluate(() => {
+      window.originalStorageSet = chrome.storage.local.set;
+      chrome.storage.local.set = async () => { throw new Error('Simulated storage write failure'); };
+    });
+    try {
+      popup.once('dialog', dialog => dialog.accept());
+      await popup.getByRole('button', { name: 'Remove saved brief: Research Signals', exact: true }).click();
+      await popup.getByText('Could not remove this brief. Try Remove again; no removal was confirmed.').waitFor();
+      assert.deepEqual(await readHistory(), beforeRemoval);
+      assert.equal(await popup.locator('#results').isVisible(), true);
+    } finally {
+      await popup.evaluate(() => { chrome.storage.local.set = window.originalStorageSet; delete window.originalStorageSet; });
+    }
+    popup.once('dialog', dialog => dialog.accept());
+    await popup.getByRole('button', { name: 'Remove saved brief: Research Signals', exact: true }).focus();
+    await popup.keyboard.press('Enter');
+    await popup.getByText('Brief removed from this device. Downloaded backups are unchanged; import a backup to restore it.').waitFor();
+    assert.deepEqual(await readHistory(), beforeRemoval.filter(item => item.title !== 'Research Signals'));
+    assert.equal(await popup.locator('#results').isVisible(), false);
+    assert.equal(await popup.locator('#comparison-output').isVisible(), false);
+    assert.equal(await popup.locator('#review-note').inputValue(), '');
+    assert.equal(await popup.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'Remove saved brief: Legacy brief');
+    const restoreFile = { name: 'restore.queue.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(queueBackup)) };
+    popup.once('dialog', dialog => dialog.accept());
+    await popup.locator('#queue-import-file').setInputFiles(restoreFile);
+    await popup.getByText('Imported 2 briefs. Queue now has 2.').waitFor();
+    assert.deepEqual(await readHistory(), beforeRemoval);
+    await popup.getByRole('button', { name: 'Open saved brief: Research Signals', exact: true }).click();
+    assert.equal(await popup.locator('#review-note').inputValue(), 'Verify the primary source before citing.');
+    checkpoint('Browser smoke: canceled/failed removal, keyboard deletion, and backup restoration passed.');
     const importedBrief = { ...queueBackup.briefs[0], url: 'https://imported.example/report?private=removed', title: 'Imported reference', review: { decision: 'reference', note: 'Restored from a local backup.', updatedAt: '2026-08-01' } };
     const importFile = { name: 'page-lens.queue.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ ...queueBackup, briefs: [importedBrief, { invalid: true }] })) };
     popup.once('dialog', dialog => dialog.dismiss());
@@ -107,14 +153,35 @@ async function screenshotPopup(page, file) {
     const importedHistory = await popup.evaluate(async () => (await chrome.storage.local.get({ history: [] })).history);
     if (importedHistory[0].url !== 'https://imported.example/report' || importedHistory[0].review.decision !== 'reference') throw new Error('Queue import did not normalize and prioritize the imported brief');
     await popup.locator('#history-filter').selectOption('reference'); await popup.getByRole('button', { name: /Open saved brief: Imported reference/ }).waitFor(); await popup.locator('#history-filter').selectOption('all');
-    if (captureStoreAssets) await popup.locator('#history-section').screenshot({ path: path.resolve('output/playwright/portable-queue-panel.png'), animations: 'disabled' });
+    fs.mkdirSync(path.resolve('output/playwright'), { recursive: true });
+    await popup.locator('#history-section').screenshot({ path: path.resolve('output/playwright/portable-queue-panel.png'), animations: 'disabled' });
     checkpoint('Browser smoke: queue backup, import, and recovery filtering passed.');
+    await popup.locator('#review-note').fill('Unsaved note on the remaining brief.');
+    await popup.locator('#history-filter').selectOption('reference');
+    popup.once('dialog', dialog => dialog.accept());
+    await popup.getByRole('button', { name: 'Remove saved brief: Imported reference', exact: true }).click();
+    await popup.getByText('No saved briefs match this filter.').waitFor();
+    assert.equal((await readHistory()).length, 2);
+    assert.equal(await popup.locator('#brief-title').textContent(), 'Research Signals');
+    assert.equal(await popup.locator('#review-note').inputValue(), 'Unsaved note on the remaining brief.');
+    await popup.locator('#history-filter').selectOption('all');
+    for (const title of ['Research Signals', 'Legacy brief']) {
+      popup.once('dialog', dialog => dialog.accept());
+      await popup.getByRole('button', { name: `Remove saved brief: ${title}`, exact: true }).click();
+      await popup.getByRole('button', { name: `Remove saved brief: ${title}`, exact: true }).waitFor({ state: 'detached' });
+    }
+    assert.deepEqual(await readHistory(), []);
+    await popup.getByText('No saved briefs yet. Import a Page Lens backup to restore a queue.').waitFor();
+    assert.equal(await popup.locator('#queue-json-btn').isDisabled(), true);
+    assert.equal(await popup.locator('#queue-import-btn').isEnabled(), true);
+    assert.equal(await popup.evaluate(() => document.activeElement?.id), 'history-heading');
+    checkpoint('Browser smoke: filtered removal preserved other notes and last-record empty state passed.');
     await context.route('https://example.test/informe', route => route.fulfill({
       contentType: 'text/html; charset=utf-8',
       body: `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Informe público</title><meta name="author" content="Equipo de Investigación"></head><body><main><h1>Informe público</h1><p>${'La investigación pública reúne información útil y análisis cuidadoso. '.repeat(24)}</p><h2>Fuentes</h2><a href="https://fuente.example/estudio">Estudio principal</a></main></body></html>`
     }));
     const spanishPage = await context.newPage(); await spanishPage.goto('https://example.test/informe'); const spanishSnapshot = await spanishPage.evaluate(extractPage);
-    const spanishState = await popup.evaluate(snapshot => { const analyzed = SamsarixAnalyzer.analyzePage(snapshot); display(analyzed); $('page-title').textContent = analyzed.title; $('page-url').textContent = analyzed.url; return { analyzed, scoreText: $('readability-score').textContent, noteText: $('readability-note').textContent }; }, spanishSnapshot);
+    const spanishState = await popup.evaluate(snapshot => { const analyzed = SamsarixAnalyzer.analyzePage(snapshot); display(analyzed); return { analyzed, scoreText: $('readability-score').textContent, noteText: $('readability-note').textContent }; }, spanishSnapshot);
     if (spanishState.analyzed.language !== 'es' || spanishState.analyzed.readabilityAvailable !== false || spanishState.analyzed.scores.readability !== null) throw new Error('Declared non-English readability was not suppressed');
     if (spanishState.scoreText !== 'Not available') throw new Error('Popup did not render the unavailable readability state');
     if (!/page declares es/i.test(spanishState.noteText)) throw new Error('Popup did not explain the declared-language limitation');

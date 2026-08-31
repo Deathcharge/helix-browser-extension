@@ -12,22 +12,23 @@ One explicit click produces:
 - an on-device comparison between the current brief and any saved baseline, with descriptive deltas and shared signals.
 - a private research queue with review decisions, bounded notes, and decision filters.
 - versioned JSON queue backup/import and whole-queue Markdown handoff without cloud sync.
+- confirmed removal of one saved brief without clearing the rest of the queue.
 
 Source signals describe what the page exposes. They do **not** establish factuality, credibility, authority, or quality.
 
-Status: **1.8 security-hardened bounded-pilot candidate for unpacked-extension evaluation.** Chrome Web Store publication and real-participant validation are not yet complete.
+Status: **1.8.1 bounded-pilot candidate for unpacked-extension evaluation.** Chrome Web Store publication and real-participant validation are not yet complete.
 
 ## Join the bounded pilot
 
-Page Lens needs 8–12 consenting participants who make real source-reading decisions. Researchers, analysts, writers, journalists, educators, students, and independent knowledge workers are all useful perspectives. The pilot uses the unsigned [v1.8.0-pilot.1 prerelease](https://github.com/Deathcharge/samsarix-page-lens/releases/tag/v1.8.0-pilot.1) and takes place over one initial session plus one return use 2–7 days later.
+Page Lens needs 8–12 consenting participants who make real source-reading decisions. Researchers, analysts, writers, journalists, educators, students, and independent knowledge workers are all useful perspectives. The pilot uses the unsigned [v1.8.1-pilot.1 prerelease](https://github.com/Deathcharge/samsarix-page-lens/releases/tag/v1.8.1-pilot.1) and takes place over one initial session plus one return use 2–7 days later.
 
-Read the [pilot protocol](docs/PILOT.md), then [email support@samsarix.com to volunteer](mailto:support@samsarix.com?subject=Page%20Lens%201.8%20pilot%20volunteer&body=I%20would%20like%20to%20volunteer%20for%20the%20Page%20Lens%201.8%20bounded%20pilot.%0A%0ACohort%20%28research%2Fanalysis%2C%20writing%2Fjournalism%2C%20education%2Fstudent%2C%20or%20independent%20knowledge%20work%29%3A%0ABrowser%20and%20operating%20system%3A%0ARelevant%20source-triage%20use%20case%20%28do%20not%20include%20private%20URLs%20or%20confidential%20content%29%3A). Do not send page URLs, browsing history, source contents, screenshots, queue exports, or private notes. Participation is voluntary; positive feedback is neither expected nor rewarded.
+Read the [pilot protocol](docs/PILOT.md), then [email support@samsarix.com to volunteer](mailto:support@samsarix.com?subject=Page%20Lens%201.8.1%20pilot%20volunteer&body=I%20would%20like%20to%20volunteer%20for%20the%20Page%20Lens%201.8.1%20bounded%20pilot.%0A%0ACohort%20%28research%2Fanalysis%2C%20writing%2Fjournalism%2C%20education%2Fstudent%2C%20or%20independent%20knowledge%20work%29%3A%0ABrowser%20and%20operating%20system%3A%0ARelevant%20source-triage%20use%20case%20%28do%20not%20include%20private%20URLs%20or%20confidential%20content%29%3A). Do not send page URLs, browsing history, source contents, screenshots, queue exports, or private notes. Participation is voluntary; positive feedback is neither expected nor rewarded.
 
 ## Install and try it
 
 Prerequisites: Chrome or Chromium with Manifest V3 support. Node.js 24+ is needed only for development and release verification.
 
-1. For ordinary development, clone this repository. Pilot participants instead download and extract `samsarix-page-lens-1.8.0.zip` from the pinned prerelease and verify the SHA-256 printed in that release and in [docs/PILOT.md](docs/PILOT.md).
+1. For ordinary development, clone this repository. Pilot participants instead download and extract `samsarix-page-lens-1.8.1.zip` from the pinned prerelease and verify the SHA-256 printed in that release and in [docs/PILOT.md](docs/PILOT.md).
 2. Open `chrome://extensions`.
 3. Enable **Developer mode**.
 4. Choose **Load unpacked** and select `extension` for a source checkout, or the extracted pilot ZIP directory for the pinned prerelease.
@@ -64,6 +65,8 @@ Comparisons are calculated on demand from two briefs already in the popup and ar
 
 Queue backup and import are explicit local actions, not synchronization. JSON imports are limited to 1 MB and 100 input records, validated before storage, normalized through the same privacy migration as existing history, deduplicated, and capped at 25 stored briefs. A structurally invalid backup does not modify the current queue.
 
+To remove a single saved source, select **Remove** beside its queue entry and confirm. The confirmation covers the saved brief, decision, note, and any unsaved edits to that displayed brief. Other records remain intact. Removal does not delete downloaded backups; use **Import backup** to restore from one if needed. **Clear** removes the whole saved queue after confirmation. The **Displayed brief** title and URL identify the record currently being read; **Create page brief** still analyzes the active tab.
+
 ## Development and verification
 
 ```bash
@@ -72,7 +75,7 @@ npx playwright install chromium
 npm run check
 ```
 
-The complete gate runs manifest/privacy/workflow policy checks, thirty deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, review decisions and filtering, queue backup/import, history reopening, saved-baseline comparison, export, and declared non-English behavior.
+The complete gate runs manifest/privacy/workflow policy checks, thirty-two deterministic unit tests, a clean artifact build, and an installed-extension Chromium test covering extraction, sanitization, popup rendering, local save, review decisions and filtering, queue backup/import, history reopening, saved-baseline comparison, export, and declared non-English behavior.
 
 Individual commands:
 
@@ -83,7 +86,7 @@ npm run build
 npm run test:browser
 ```
 
-`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.8.0.zip`, containing only the runtime extension, icons, license, notice, and build metadata. The build rejects symbolic links and other non-regular package inputs. Playwright, jsdom, and fflate are development-only dependencies and are not shipped.
+`npm run build` creates the unpacked `dist/samsarix-page-lens` directory and deterministic `dist/samsarix-page-lens-1.8.1.zip`, containing only the runtime extension, icons, license, notice, and build metadata. The build rejects symbolic links and other non-regular package inputs. Playwright, jsdom, and fflate are development-only dependencies and are not shipped.
 
 ### Architecture
 

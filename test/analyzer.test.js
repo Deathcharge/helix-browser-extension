@@ -2,7 +2,7 @@
 // Copyright 2026 Samsarix LLC
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { analyzePage, compareBriefs, createQueueBackup, mergeQueueHistory, migrateStoredResult, normalizeReview, parseQueueBackup, sanitizeUrl, toComparisonMarkdown, toMarkdown, toQueueMarkdown, topKeywords } = require('../extension/analyzer.js');
+const { analyzePage, compareBriefs, createQueueBackup, mergeQueueHistory, migrateStoredResult, normalizeReview, parseQueueBackup, removeQueueBrief, sanitizeUrl, toComparisonMarkdown, toMarkdown, toQueueMarkdown, topKeywords } = require('../extension/analyzer.js');
 
 const sample = {
   url: 'https://example.com/report?token=secret#private', title: 'Example report', description: 'A useful report', language: 'en', author: 'Research Team',
@@ -193,4 +193,23 @@ test('merges imported queue records first and exports portable Markdown', () => 
   assert.equal(merged.length, 2); assert.equal(merged[0].title, 'Imported update');
   const markdown = toQueueMarkdown(merged);
   assert.match(markdown, /2 saved briefs/); assert.match(markdown, /Imported update/); assert.match(markdown, /Portable note/);
+});
+test('removes only the selected queue identity without mutating input or backup', () => {
+  const target = analyzePage(sample);
+  const other = analyzePage({ ...sample, url: 'https://other.example/report', title: 'Other report' });
+  other.review = { decision: 'reference', note: 'Keep this note.', updatedAt: '2026-08-01T00:00:00.000Z' };
+  const history = [target, other];
+  const before = JSON.stringify(history);
+  const backup = createQueueBackup(history);
+  assert.deepEqual(removeQueueBrief(history, { ...target, url: `${target.url}?private=discarded` }), [other]);
+  assert.equal(JSON.stringify(history), before);
+  assert.equal(backup.briefs.length, 2);
+  assert.deepEqual(removeQueueBrief([other], target), [other]);
+  assert.deepEqual(removeQueueBrief([target], target), []);
+});
+test('queue removal distinguishes URL-less briefs using the backup identity contract', () => {
+  const first = analyzePage({ ...sample, url: '', title: 'First brief' });
+  const second = analyzePage({ ...sample, url: '', title: 'Second brief' });
+  assert.deepEqual(removeQueueBrief([first, second], first), [second]);
+  assert.throws(() => removeQueueBrief([first], null), /valid saved brief/);
 });

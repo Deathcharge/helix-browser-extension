@@ -19,7 +19,7 @@ Do not recruit only contributors, friends already familiar with the interface, o
 
 ## Safety and privacy
 
-- Use the unsigned [v1.8.0-pilot.1 prerelease](https://github.com/Deathcharge/samsarix-page-lens/releases/tag/v1.8.0-pilot.1) artifact `samsarix-page-lens-1.8.0.zip` with SHA-256 `22698A4AB729D3A62F4D34810EF399EA083723E6B346187B2CC94F16EA18F4D1`. Do not silently substitute another build.
+- Use the unsigned [v1.8.1-pilot.1 prerelease](https://github.com/Deathcharge/samsarix-page-lens/releases/tag/v1.8.1-pilot.1) artifact `samsarix-page-lens-1.8.1.zip` with SHA-256 `8375BEBD253730000FF3484986ED43AD940316D8F40A297B92FBFCCFED6BC81E`. Do not silently substitute another build.
 - Explain that the build is an unsigned pilot extension and provide removal instructions.
 - Participants choose their own ordinary public pages. Do not ask them to disclose URLs, browsing history, source text, queue exports, screenshots, or private notes.
 - Do not use pages containing medical, financial, legal, authentication, private workplace, or personally sensitive material for the pilot.
@@ -33,7 +33,7 @@ Give only the short product description from the store listing. Do not demonstra
 1. **First brief:** choose a real public page you might read, create a brief, and explain what you think each score means.
 2. **Decision:** decide whether to read deeper, keep as a reference, skip, or leave unreviewed; add a non-sensitive note and save it.
 3. **Second source:** analyze another page relevant to the same real task and compare it with the saved baseline.
-4. **Recovery:** create a queue backup and queue Markdown, remove one test record, then restore the JSON backup after reading the confirmation.
+4. **Recovery:** create a queue backup and queue Markdown, select **Remove** beside one test record and confirm, then restore the JSON backup after reading the import confirmation. Check that the other record was unchanged and the restored decision/note match the backup.
 5. **Return:** after 2–7 days, reopen Page Lens without assistance and use the queue for one genuine source decision.
 6. **Feedback:** use the in-product link or answer the same six questions verbally. Ask the participant to distinguish “page signal” from “truth/credibility judgment.”
 
@@ -64,7 +64,7 @@ Feature requests enter the roadmap only when tied to the same narrow source-tria
 
 ## Aggregate result template
 
-Copy this section into a dated `docs/pilots/YYYY-MM-DD-1.8.md` file after the pilot. Commit no raw responses.
+Copy this section into a dated `docs/pilots/YYYY-MM-DD-1.8.1.md` file after the pilot. Commit no raw responses.
 
 ```text
 Artifact version and SHA-256:

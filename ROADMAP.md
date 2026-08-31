@@ -34,6 +34,8 @@ Current disposition: productization is merged. Version 1.8 packages the private 
 
 Current hardening backlog:
 
+- [x] Complete per-record queue removal and backup restoration, and explicitly label the displayed saved source independently from the active tab.
+
 - Popup/Chrome integration, extraction, sanitization, history, and the exact built artifact are covered by committed Chromium smoke testing. Manual toolbar `activeTab` behavior and clipboard/download prompts remain release gates.
 - Store screenshots are prepared and policy-checked. The privacy disclosure is published over enforced HTTPS and verified against its repository source after deployment. Store account/signing/submission and adoption evidence remain owner-controlled.
 - [x] Use Unicode-aware word/term tokenization; calculate the English readability formula only for pages that explicitly declare English, and show an unavailable reason for non-English or undeclared language.

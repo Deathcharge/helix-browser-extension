@@ -3,6 +3,7 @@
 const $ = id => document.getElementById(id);
 let currentTab = null; let currentResult = null;
 let savedHistory = []; let comparisonCandidates = []; let currentComparison = null;
+let removalPending = false;
 const decisionLabels = { 'read-deeper': 'Read deeper', reference: 'Reference', skip: 'Skip' };
 
 function show(name) { ['loading', 'error', 'results'].forEach(id => $(id).classList.toggle('hidden', id !== name)); }
@@ -31,6 +32,8 @@ function applyReviewInputs() {
 }
 function display(result) {
   currentResult = result;
+  $('brief-title').textContent = result.title;
+  $('brief-url').textContent = result.url || 'Source URL not retained';
   const counts = result.counts && typeof result.counts === 'object' ? result.counts : {};
   $('reading-time').textContent = `${result.readingMinutes} min`;
   $('word-count').textContent = result.wordCount.toLocaleString();
@@ -87,9 +90,12 @@ async function updateHistory() {
   const filter = $('history-filter').value;
   const filtered = history.filter(item => filter === 'all' || (filter === 'unreviewed' ? !item.review?.decision : item.review?.decision === filter));
   $('history-list').replaceChildren(...filtered.map(item => {
+    const row = document.createElement('div'); row.className = 'history-entry';
     const button = document.createElement('button'); button.className = 'history-item'; button.type = 'button'; button.setAttribute('aria-label', `Open saved brief: ${item.title}`);
     const title = document.createElement('strong'); title.textContent = item.title; const meta = document.createElement('span'); meta.textContent = `${item.wordCount.toLocaleString()} words · ${new Date(item.analyzedAt).toLocaleDateString()}`;
-    button.append(title, meta); if (item.review?.decision) button.append(tag(decisionLabels[item.review.decision], 'history-decision')); button.addEventListener('click', () => display(item)); return button;
+    button.append(title, meta); if (item.review?.decision) button.append(tag(decisionLabels[item.review.decision], 'history-decision')); button.addEventListener('click', () => display(item));
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'history-remove link-btn'; remove.textContent = 'Remove'; remove.setAttribute('aria-label', `Remove saved brief: ${item.title}`);
+    remove.addEventListener('click', () => removeSavedBrief(item)); row.append(button, remove); return row;
   }));
   $('history-empty').textContent = history.length ? 'No saved briefs match this filter.' : 'No saved briefs yet. Import a Page Lens backup to restore a queue.';
   $('history-empty').classList.toggle('hidden', filtered.length > 0);
@@ -97,10 +103,39 @@ async function updateHistory() {
   updateComparisonOptions();
 }
 async function save() {
-  if (!currentResult) return;
+  if (!currentResult || removalPending) return;
   applyReviewInputs();
-  const history = await getHistory(); const next = [currentResult, ...history.filter(item => item.url !== currentResult.url)].slice(0, 25);
+  const history = await getHistory(); const next = SamsarixAnalyzer.mergeQueueHistory([currentResult], history);
   await chrome.storage.local.set({ history: next }); $('save-btn').textContent = 'Saved'; setTimeout(() => { $('save-btn').textContent = 'Save locally'; }, 1200); await updateHistory();
+}
+async function removeSavedBrief(item) {
+  if (removalPending) return;
+  if (!confirm(`Remove "${item.title}" from this device's research queue? This deletes its saved brief, decision, and note. If this brief is open, its unsaved edits are also discarded. Downloaded backups are not changed.`)) {
+    setQueueStatus('Removal canceled. The local queue was not changed.'); return;
+  }
+  removalPending = true;
+  const controls = [...document.querySelectorAll('.history-remove'), $('save-btn'), $('clear-history-btn'), $('queue-import-btn')];
+  controls.forEach(control => { control.disabled = true; });
+  let removed = false;
+  try {
+    const history = await getHistory();
+    const remaining = SamsarixAnalyzer.removeQueueBrief(history, item);
+    if (remaining.length === history.length) {
+      await updateHistory(); setQueueStatus('This brief is no longer in the saved queue.'); return;
+    }
+    await chrome.storage.local.set({ history: remaining });
+    removed = true;
+    if (currentResult && SamsarixAnalyzer.removeQueueBrief([currentResult], item).length === 0) {
+      currentResult = null; populateReview(null); $('brief-title').textContent = ''; $('brief-url').textContent = ''; show('idle');
+    }
+    await updateHistory();
+    setQueueStatus('Brief removed from this device. Downloaded backups are unchanged; import a backup to restore it.');
+    const nextControl = document.querySelector('.history-remove') || $('history-heading'); nextControl.focus();
+  } catch {
+    setQueueStatus(removed ? 'Brief removed, but the queue could not refresh. Reopen Page Lens to reload it.' : 'Could not remove this brief. Try Remove again; no removal was confirmed.');
+  } finally {
+    removalPending = false; controls.forEach(control => { control.disabled = false; });
+  }
 }
 function summary(result) { applyReviewInputs(); const readability = result.readabilityAvailable === false ? 'not available' : `${result.scores.readability}/100`; const sourceScore = result.sourceSignalsAvailable === false ? 'not analyzed' : `${result.scores.provenance}/100`; const decision = result.review?.decision ? `\nReview decision: ${decisionLabels[result.review.decision]}` : ''; return `${result.title}\n${result.url}\n${result.wordCount} words · ${result.readingMinutes} min read\nReadability ${readability} · Structure ${result.scores.structure}/100 · Source signals ${sourceScore}${decision}\nGenerated locally by Samsarix Page Lens. Scores do not establish factuality or credibility.`; }
 async function copy() { await navigator.clipboard.writeText(summary(currentResult)); $('copy-btn').textContent = 'Copied'; setTimeout(() => { $('copy-btn').textContent = 'Copy summary'; }, 1200); }
@@ -113,7 +148,7 @@ async function exportQueueJson() { download(JSON.stringify(SamsarixAnalyzer.crea
 async function exportQueueMarkdown() { download(SamsarixAnalyzer.toQueueMarkdown(await getHistory()), 'text/markdown', 'queue.md'); }
 function setQueueStatus(message) { $('queue-status').textContent = message; $('queue-status').classList.toggle('hidden', !message); }
 async function importQueueBackup(file) {
-  if (!file) return;
+  if (!file || removalPending) return;
   if (file.size > 1000000) throw new Error('Queue backup must be 1 MB or smaller.');
   let value;
   try { value = JSON.parse(await file.text()); } catch { throw new Error('Queue backup is not valid JSON.'); }
@@ -156,6 +191,9 @@ function compare() {
 async function copyComparison() { await navigator.clipboard.writeText(SamsarixAnalyzer.toComparisonMarkdown(currentComparison)); $('copy-comparison-btn').textContent = 'Copied'; setTimeout(() => { $('copy-comparison-btn').textContent = 'Copy comparison'; }, 1200); }
 function exportComparisonMarkdown() { download(SamsarixAnalyzer.toComparisonMarkdown(currentComparison), 'text/markdown', 'comparison.md'); }
 async function initialize() {
+  $('history-heading').tabIndex = -1;
+  const feedback = $('pilot-feedback'); const feedbackUrl = new URL(feedback.href);
+  feedbackUrl.searchParams.set('subject', `Page Lens ${chrome.runtime.getManifest().version} pilot feedback`); feedback.href = feedbackUrl.href;
   [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   $('page-title').textContent = currentTab?.title || 'Current page'; $('page-url').textContent = SamsarixAnalyzer.sanitizeUrl(currentTab?.url || ''); $('analyze-btn').disabled = !/^https?:/i.test(currentTab?.url || ''); await updateHistory();
 }
@@ -166,5 +204,5 @@ $('compare-select').addEventListener('change', () => { currentComparison = null;
 $('review-decision').addEventListener('change', applyReviewInputs); $('review-note').addEventListener('input', applyReviewInputs); $('history-filter').addEventListener('change', () => updateHistory().catch(fail));
 $('queue-json-btn').addEventListener('click', () => exportQueueJson().catch(fail)); $('queue-markdown-btn').addEventListener('click', () => exportQueueMarkdown().catch(fail));
 $('queue-import-btn').addEventListener('click', () => $('queue-import-file').click()); $('queue-import-file').addEventListener('change', event => { const file = event.target.files?.[0]; event.target.value = ''; setQueueStatus(''); importQueueBackup(file).catch(fail); });
-$('clear-history-btn').addEventListener('click', async () => { if (!confirm('Clear all saved briefs?')) return; try { await chrome.storage.local.remove('history'); setQueueStatus(''); await updateHistory(); } catch (error) { fail(error); } });
+$('clear-history-btn').addEventListener('click', async () => { if (removalPending || !confirm('Clear all saved briefs?')) return; try { await chrome.storage.local.remove('history'); setQueueStatus(''); await updateHistory(); } catch (error) { fail(error); } });
 document.addEventListener('DOMContentLoaded', () => initialize().catch(fail));
