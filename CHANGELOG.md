@@ -2,6 +2,14 @@
 
 All notable user-facing and security-relevant changes are recorded here. Versions before the first Chrome Web Store publication are bounded-pilot builds, not supported store releases.
 
+## 1.8.2 — 2026-08-31
+
+- Preserve each click-time brief and note when saves overlap or the displayed source changes while saving.
+- Serialize migration and all queue mutations across extension windows so independent changes cannot overwrite one another through stale read/modify/write operations.
+- Report a busy queue after five seconds of lock waiting; fail closed if safe locking is unavailable and retain storage failure feedback.
+- Avoid marking a different displayed brief or subsequently edited note as saved when an earlier save finishes.
+- Add seven transaction tests and browser regressions for two extension windows, plus actual action-granted page extraction and permission denial/revocation.
+
 ## 1.8.1 — 2026-08-31
 
 - Complete the pilot's single-record removal task with a per-brief **Remove** control, confirmation, cancellation, recoverable write-failure state, and backup restoration.

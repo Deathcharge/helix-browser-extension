@@ -1,6 +1,6 @@
 # Productization record
 
-Last updated: 2026-07-28
+Last updated: 2026-08-31
 
 ## Product definition
 
@@ -288,3 +288,22 @@ Verification from a fresh `npm ci`:
 - Two builds produced the same 27,124-byte `samsarix-page-lens-1.8.1.zip`: SHA-256 `8375BEBD253730000FF3484986ED43AD940316D8F40A297B92FBFCCFED6BC81E`.
 
 The browser harness loads the real unpacked extension and uses actual local storage, dialogs, file import, and downloads, but injects deterministic page snapshots into the popup. It does not prove the manual toolbar `activeTab` grant or Chrome Web Store installation path. Those checks, real participant sessions, monitored support, and owner identity/trademark confirmations remain external release gates. Feature expansion should follow observed pilot needs; it is not a substitute for those gates.
+
+## 1.8.2 queue transaction correction — August 31, 2026
+
+A new regression reproduced data loss in 1.8.1: displaying brief A, starting Save, then displaying and saving brief B before the first storage read finished lost A. Independent popup windows also performed whole-history read/modify/write operations without coordination, including during migration.
+
+`extension/queue.js` now captures normalized values synchronously and serializes reads, migrations, saves, imports, removals, and clearing through one exclusive Web Lock. All runtime history writes pass through this store. A queued operation reads the latest committed history only after acquiring the lock. Lock waiting is bounded to five seconds; unsupported locking fails closed, and failed storage writes are not acknowledged as successful. Finishing a save does not label a different displayed brief or later-edited note as saved.
+
+The coordination scope is extension contexts sharing the same lock manager/storage bucket, not cross-profile sync. Same-source replacement and the 25-record cap remain intentional; operations commit in acquisition order, and Clear removes records committed before it. Existing windows do not automatically merge unsaved notes or refresh each other's UI. Close/reopen after updating from older builds, whose writes do not use this lock. No claim is made about crash durability or external writes bypassing the store. See the [W3C Web Locks specification](https://www.w3.org/TR/web-locks/) for the lock-manager scope and [Chrome storage documentation](https://developer.chrome.com/docs/extensions/reference/api/storage) for the asynchronous storage boundary.
+
+Verification from a fresh `npm ci`:
+
+- `npm run check` passed policy/syntax checks, 39/39 tests, the package build, and the Chromium journey.
+- Seven new transaction tests cover click-time snapshots, overlapping migration/save, import/remove/clear ordering, write failure and retry, input validation, the 25-item cap, unavailable locks, and lock-wait timeout.
+- The browser regression uses real Chrome storage and two extension pages, deliberately holds the shared lock, verifies a second window cannot write during that hold, and checks concurrent save/removal preservation and correct save feedback.
+- The harness additionally uses the official [CDP extension-action command](https://chromedevtools.github.io/devtools-protocol/tot/Extensions/#method-triggerAction) in a disposable Chromium profile. It proves extraction is denied before invocation, succeeds through the real **Create page brief** handler and `chrome.scripting.executeScript` after invocation, retains no automatic history, and is denied after cross-origin navigation revokes the grant. No production permissions or API mocks were added.
+- `npm run build:store-assets` regenerated all three 1280×800 screenshots, which were visually reviewed. `npm audit --audit-level=low` reported zero known vulnerabilities.
+- `npm run release:verify` verified the exact packaged file list and live privacy bytes. Repeated builds produced the same 28,177-byte ZIP at SHA-256 `8D2F75C93F16B929B0F27AFCEFFA2550FDF7B655B33FF6F9DA1BA2A31522101E`.
+
+Playwright does not expose the native action bubble as a normal Page here, so this permission-path test operates the unchanged popup document in a tab after Chromium grants access. It is not evidence for native toolbar layout, Chrome Web Store installation, or a human session. Later queue/comparison scenarios still use deterministic snapshots. The public pilot issue still records zero enrolled participants; support inbox contents and authenticated store state were not inspected.
