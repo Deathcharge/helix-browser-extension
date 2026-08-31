@@ -13,6 +13,6 @@ test('ships a minimal Manifest V3 permission set', () => {
 });
 test('ships Samsarix release metadata', () => {
   assert.equal(manifest.name, 'Samsarix Page Lens');
-  assert.equal(manifest.version, '1.8.2');
+  assert.equal(manifest.version, '1.8.3');
   assert.equal(manifest.homepage_url, 'https://samsarix.com');
 });
