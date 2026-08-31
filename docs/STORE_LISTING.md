@@ -29,7 +29,7 @@ No host permissions are requested.
 ## Owner-provided assets and actions
 
 - [ ] Confirm Samsarix LLC owns or has permission to use the product name and supplied icon artwork.
-- [x] Generate and visually review three 1280×800 screenshots in `store-assets/` from the packaged 1.8.1 browser journey.
+- [x] Generate and visually review three 1280×800 screenshots in `store-assets/` from the packaged 1.8.2 browser journey.
 - [x] Generate and visually review the required 440×280 small promotional tile in `store-assets/`.
 - [x] Prepare the standalone disclosure at `site/privacy/index.html` and a SHA-pinned, owner-triggered GitHub Pages workflow.
 - [x] Publish and byte-verify the disclosure at `https://deathcharge.github.io/samsarix-page-lens/` with HTTPS enforcement; use this URL in the listing.
@@ -43,7 +43,7 @@ No host permissions are requested.
 
 The current runtime performs no network requests and includes no analytics or advertising SDK. Page content is processed ephemerally on-device. User-requested schema-v2 briefs, including optional review decisions and notes capped at 500 characters, are stored locally, capped at 25, and removable. The static pilot-feedback link opens the user's email client with questions and a warning not to include private URLs or confidential content; Page Lens does not send the message itself. Store declarations must be revalidated against the exact submission artifact and current Chrome Web Store questionnaire.
 
-Chrome's user-data policy treats website content, browsing activity, and user-provided content as handled data even when processing and storage never leave the device. Use these conservative dashboard answers for the 1.8.1 candidate (confirm against the live questionnaire):
+Chrome's user-data policy treats website content, browsing activity, and user-provided content as handled data even when processing and storage never leave the device. Use these conservative dashboard answers for the 1.8.2 candidate (confirm against the live questionnaire):
 
 - **Single purpose:** Give the user a transparent, on-device reading and structure brief for the active webpage.
 - **Remote code:** No, this extension does not use remote code.

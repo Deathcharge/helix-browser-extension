@@ -4,6 +4,7 @@ const $ = id => document.getElementById(id);
 let currentTab = null; let currentResult = null;
 let savedHistory = []; let comparisonCandidates = []; let currentComparison = null;
 let removalPending = false;
+const queueStore = SamsarixQueue.createQueueStore({ storage: chrome.storage.local, locks: navigator.locks, analyzer: SamsarixAnalyzer });
 const decisionLabels = { 'read-deeper': 'Read deeper', reference: 'Reference', skip: 'Skip' };
 
 function show(name) { ['loading', 'error', 'results'].forEach(id => $(id).classList.toggle('hidden', id !== name)); }
@@ -76,11 +77,7 @@ async function analyze() {
   } catch (error) { fail(error); } finally { $('analyze-btn').disabled = false; }
 }
 async function getHistory() {
-  const stored = await chrome.storage.local.get({ history: [] });
-  const original = Array.isArray(stored.history) ? stored.history : [];
-  const history = original.map(SamsarixAnalyzer.migrateStoredResult).filter(Boolean).slice(0, 25);
-  if (JSON.stringify(history) !== JSON.stringify(original)) await chrome.storage.local.set({ history });
-  return history;
+  return queueStore.read();
 }
 async function updateHistory() {
   const history = await getHistory();
@@ -105,8 +102,12 @@ async function updateHistory() {
 async function save() {
   if (!currentResult || removalPending) return;
   applyReviewInputs();
-  const history = await getHistory(); const next = SamsarixAnalyzer.mergeQueueHistory([currentResult], history);
-  await chrome.storage.local.set({ history: next }); $('save-btn').textContent = 'Saved'; setTimeout(() => { $('save-btn').textContent = 'Save locally'; }, 1200); await updateHistory();
+  const selected = currentResult; const selectedReview = JSON.stringify(selected.review);
+  await queueStore.save(selected);
+  if (currentResult === selected && JSON.stringify(selected.review) === selectedReview) {
+    $('save-btn').textContent = 'Saved'; setTimeout(() => { $('save-btn').textContent = 'Save locally'; }, 1200);
+  }
+  await updateHistory();
 }
 async function removeSavedBrief(item) {
   if (removalPending) return;
@@ -118,12 +119,10 @@ async function removeSavedBrief(item) {
   controls.forEach(control => { control.disabled = true; });
   let removed = false;
   try {
-    const history = await getHistory();
-    const remaining = SamsarixAnalyzer.removeQueueBrief(history, item);
-    if (remaining.length === history.length) {
+    const outcome = await queueStore.remove(item);
+    if (!outcome.removed) {
       await updateHistory(); setQueueStatus('This brief is no longer in the saved queue.'); return;
     }
-    await chrome.storage.local.set({ history: remaining });
     removed = true;
     if (currentResult && SamsarixAnalyzer.removeQueueBrief([currentResult], item).length === 0) {
       currentResult = null; populateReview(null); $('brief-title').textContent = ''; $('brief-url').textContent = ''; show('idle');
@@ -154,8 +153,7 @@ async function importQueueBackup(file) {
   try { value = JSON.parse(await file.text()); } catch { throw new Error('Queue backup is not valid JSON.'); }
   const imported = SamsarixAnalyzer.parseQueueBackup(value);
   if (!confirm(`Import ${imported.briefs.length} ${imported.briefs.length === 1 ? 'brief' : 'briefs'}? Backup versions replace matching URLs. The merged queue remains capped at 25, so older local briefs may be dropped.`)) { setQueueStatus('Import canceled. The local queue was not changed.'); return; }
-  const history = await getHistory(); const merged = SamsarixAnalyzer.mergeQueueHistory(imported.briefs, history);
-  await chrome.storage.local.set({ history: merged }); await updateHistory();
+  const { history: merged } = await queueStore.importBriefs(imported.briefs); await updateHistory();
   setQueueStatus(`Imported ${imported.briefs.length} ${imported.briefs.length === 1 ? 'brief' : 'briefs'}${imported.skipped ? ` · skipped ${imported.skipped} invalid or duplicate` : ''}. Queue now has ${merged.length}.`);
 }
 function updateComparisonOptions() {
@@ -204,5 +202,5 @@ $('compare-select').addEventListener('change', () => { currentComparison = null;
 $('review-decision').addEventListener('change', applyReviewInputs); $('review-note').addEventListener('input', applyReviewInputs); $('history-filter').addEventListener('change', () => updateHistory().catch(fail));
 $('queue-json-btn').addEventListener('click', () => exportQueueJson().catch(fail)); $('queue-markdown-btn').addEventListener('click', () => exportQueueMarkdown().catch(fail));
 $('queue-import-btn').addEventListener('click', () => $('queue-import-file').click()); $('queue-import-file').addEventListener('change', event => { const file = event.target.files?.[0]; event.target.value = ''; setQueueStatus(''); importQueueBackup(file).catch(fail); });
-$('clear-history-btn').addEventListener('click', async () => { if (removalPending || !confirm('Clear all saved briefs?')) return; try { await chrome.storage.local.remove('history'); setQueueStatus(''); await updateHistory(); } catch (error) { fail(error); } });
+$('clear-history-btn').addEventListener('click', async () => { if (removalPending || !confirm('Clear all saved briefs?')) return; try { await queueStore.clear(); setQueueStatus(''); await updateHistory(); } catch (error) { fail(error); } });
 document.addEventListener('DOMContentLoaded', () => initialize().catch(fail));

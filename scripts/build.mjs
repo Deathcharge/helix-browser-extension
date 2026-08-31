@@ -15,7 +15,7 @@ async function assertRegularTree(url, label) {
     await assertRegularTree(new URL(`${entry.name}${entry.isDirectory() ? '/' : ''}`, directoryUrl), `${label}/${entry.name}`);
   }
 }
-const packageInputs = ['manifest.json', 'popup.html', 'popup.css', 'popup.js', 'analyzer.js', 'extractor.js', 'icons'];
+const packageInputs = ['manifest.json', 'popup.html', 'popup.css', 'popup.js', 'analyzer.js', 'extractor.js', 'queue.js', 'icons'];
 for (const name of packageInputs) await assertRegularTree(new URL(name, source), `extension/${name}`);
 for (const name of ['LICENSE', 'NOTICE']) await assertRegularTree(new URL(`../${name}`, import.meta.url), name);
 await rm(new URL('../dist/', import.meta.url), { recursive: true, force: true });

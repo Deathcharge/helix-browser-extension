@@ -22,7 +22,8 @@ async function screenshotPopup(page, file) {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'samsarix-page-lens-'));
   const context = await chromium.launchPersistentContext(profile, {
     channel: 'chromium', headless: true, acceptDownloads: true,
-    args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`]
+    // Only the disposable test profile enables CDP extension-action automation.
+    args: ['--enable-unsafe-extension-debugging', `--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`]
   });
   let completed = false;
   try {
@@ -50,6 +51,38 @@ async function screenshotPopup(page, file) {
     if (/example\.test|page-url/i.test(pilotFeedbackHref.replace('page%20URLs', ''))) throw new Error('Pilot feedback route unexpectedly contains page-specific data');
     await popup.getByRole('button', { name: 'Import backup' }).waitFor();
     await popup.waitForFunction(() => document.querySelector('#queue-json-btn')?.disabled === true, null, { timeout: 10000 });
+    await article.bringToFront();
+    const beforeGrant = await popup.evaluate(async () => {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      try {
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: SamsarixExtractor.extractPage });
+        return 'unexpected access';
+      } catch (error) { return error.message; }
+    });
+    assert.match(beforeGrant, /cannot access|permission/i, 'Page access must be denied before invoking the extension');
+    // Official CDP action grants real activeTab access; no API/permission stubs.
+    // https://chromedevtools.github.io/devtools-protocol/tot/Extensions/#method-triggerAction
+    const browserClient = await context.browser().newBrowserCDPSession();
+    const { targetInfos } = await browserClient.send('Target.getTargets', { filter: [{ type: 'tab' }] });
+    const articleTarget = targetInfos.find(target => target.url === article.url());
+    assert.ok(articleTarget, 'The real article tab must be discoverable');
+    await browserClient.send('Extensions.triggerAction', { id: extensionId, targetId: articleTarget.targetId });
+    // Playwright cannot expose the native action bubble as a Page. Exercise its
+    // unchanged popup document in a tab, using the active article's real grant.
+    await article.bringToFront(); await popup.evaluate(() => initialize());
+    await popup.getByRole('button', { name: 'Create page brief', exact: true }).click();
+    await popup.locator('#results:not(.hidden)').waitFor();
+    assert.equal(await popup.locator('#brief-title').textContent(), 'Research Signals');
+    assert.equal(await popup.locator('#brief-url').textContent(), 'https://example.test/article');
+    assert.equal(await popup.locator('#byline').textContent(), 'Samsarix Research');
+    assert.equal(await popup.evaluate(async () => (await chrome.storage.local.get({ history: [] })).history.length), 0, 'Analysis alone must not save a brief');
+    await context.route('https://other-origin.test/article', route => route.fulfill({ contentType: 'text/html', body: '<h1>A different origin</h1>' }));
+    await article.goto('https://other-origin.test/article');
+    await popup.getByRole('button', { name: 'Create page brief', exact: true }).click();
+    await popup.locator('#error:not(.hidden)').waitFor();
+    assert.match(await popup.locator('#error-message').textContent(), /does not allow extensions/);
+    await browserClient.detach();
+    checkpoint('Browser smoke: access denied before invocation, real action grant + Create page brief passed, and cross-origin navigation revoked access.');
     const migrated = await popup.evaluate(async () => {
       await chrome.storage.local.set({ history: [{ schemaVersion: 1, url: 'https://legacy.example/report?token=private#fragment', title: 'Legacy brief', wordCount: 50, readingMinutes: 1, analyzedAt: '2026-01-01', scores: { readability: 70, structure: 60, evidence: 90 }, counts: { headings: 2, paragraphs: 3, links: 1, citations: 0 }, keywords: [{ term: 'legacy', count: 2 }], excerpt: 'Legacy preview' }] });
       await updateHistory();
@@ -57,6 +90,57 @@ async function screenshotPopup(page, file) {
     });
     if (migrated.url !== 'https://legacy.example/report' || migrated.sourceSignalsAvailable !== false) throw new Error('Legacy history was not privacy-migrated');
     checkpoint('Browser smoke: legacy migration passed.');
+    const overlapping = await popup.evaluate(async snapshot => {
+      const original = (await chrome.storage.local.get({ history: [] })).history;
+      const first = SamsarixAnalyzer.analyzePage({ ...snapshot, url: 'https://first.example/report', title: 'First pending save' });
+      const second = SamsarixAnalyzer.analyzePage({ ...snapshot, url: 'https://second.example/report', title: 'Second pending save' });
+      display(first); const firstSave = save();
+      display(second); const secondSave = save();
+      await Promise.all([firstSave, secondSave]);
+      const titles = (await chrome.storage.local.get({ history: [] })).history.map(item => item.title);
+      await chrome.storage.local.set({ history: original }); await updateHistory();
+      return titles;
+    }, snapshot);
+    assert.ok(overlapping.includes('First pending save'), 'Overlapping save lost the brief selected when the first Save action began');
+    assert.ok(overlapping.includes('Second pending save'), 'Overlapping save lost the second brief');
+    checkpoint('Browser smoke: overlapping save preserves each click-time brief.');
+    const otherPopup = await context.newPage(); await otherPopup.goto(`chrome-extension://${extensionId}/popup.html`);
+    await otherPopup.getByText('1 saved brief', { exact: true }).waitFor();
+    await popup.evaluate(() => {
+      window.queueTestLock = navigator.locks.request('samsarix-page-lens-history-v2', async () => {
+        window.queueTestLockHeld = true;
+        await new Promise(resolve => { window.releaseQueueTestLock = resolve; });
+      });
+    });
+    await popup.waitForFunction(() => window.queueTestLockHeld === true);
+    try {
+      await otherPopup.evaluate(snapshot => {
+        display(SamsarixAnalyzer.analyzePage({ ...snapshot, url: 'https://other-window.example/report', title: 'Other window save' }));
+        window.pendingQueueSave = save();
+      }, snapshot);
+      await popup.waitForFunction(async () => (await navigator.locks.query()).pending.some(lock => lock.name === 'samsarix-page-lens-history-v2'));
+      assert.equal(await otherPopup.evaluate(async () => (await chrome.storage.local.get({ history: [] })).history.length), 1, 'Another page wrote while the shared queue lock was held');
+      await otherPopup.getByRole('button', { name: 'Open saved brief: Legacy brief', exact: true }).click();
+    } finally {
+      await popup.evaluate(async () => { window.releaseQueueTestLock(); await window.queueTestLock; });
+    }
+    await otherPopup.evaluate(() => window.pendingQueueSave);
+    assert.equal(await otherPopup.locator('#save-btn').textContent(), 'Save locally', 'Finishing a pending save must not label a different displayed brief as saved');
+    assert.equal(await otherPopup.evaluate(async () => (await getHistory())[0].title), 'Other window save');
+    await otherPopup.getByRole('button', { name: 'Open saved brief: Legacy brief', exact: true }).waitFor();
+    const crossWindow = await Promise.all([
+      popup.evaluate(snapshot => queueStore.save(SamsarixAnalyzer.analyzePage({ ...snapshot, url: 'https://another-window.example/report', title: 'Another window save' })), snapshot),
+      otherPopup.evaluate(async () => queueStore.remove((await getHistory()).find(item => item.title === 'Other window save')))
+    ]);
+    assert.equal(crossWindow[1].removed, true);
+    const afterCrossWindow = await popup.evaluate(async () => (await getHistory()).map(item => item.title));
+    assert.deepEqual(afterCrossWindow.sort(), ['Another window save', 'Legacy brief']);
+    await popup.evaluate(async () => {
+      const legacy = (await getHistory()).find(item => item.title === 'Legacy brief');
+      await queueStore.clear(); await queueStore.save(legacy); await updateHistory();
+    });
+    await otherPopup.close();
+    checkpoint('Browser smoke: two extension pages share one queue lock; concurrent save/removal preserves both changes.');
     await popup.getByRole('button', { name: /Open saved brief: Legacy brief/ }).click();
     assert.equal(await popup.locator('#brief-title').textContent(), 'Legacy brief');
     assert.equal(await popup.locator('#brief-url').textContent(), 'https://legacy.example/report');

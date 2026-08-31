@@ -19,7 +19,7 @@ const files = unzipSync(new Uint8Array(archive));
 const expected = [
   'BUILD_INFO.json', 'LICENSE', 'NOTICE', 'analyzer.js', 'extractor.js',
   'icons/icon128.png', 'icons/icon16.png', 'icons/icon32.png', 'icons/icon48.png',
-  'manifest.json', 'popup.css', 'popup.html', 'popup.js'
+  'manifest.json', 'popup.css', 'popup.html', 'popup.js', 'queue.js'
 ];
 const names = Object.keys(files).filter(name => !name.endsWith('/')).sort();
 if (JSON.stringify(names) !== JSON.stringify(expected)) {
