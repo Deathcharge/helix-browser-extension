@@ -2,6 +2,12 @@
 
 All notable user-facing and security-relevant changes are recorded here. Versions before the first Chrome Web Store publication are bounded-pilot builds, not supported store releases.
 
+## 1.8.3 — 2026-08-31
+
+- Keep the native action popup at its intended document width after analysis, avoiding a large blank region beside the content.
+- Add a native-popup release gate using the actual action window and natural viewport, including note retention after closing/reopening, confirmed removal and backup restoration, two-source comparison, and sanitized export.
+- Preserve the 1.8.2 queue transaction guarantees and minimal production permissions.
+
 ## 1.8.2 — 2026-08-31
 
 - Preserve each click-time brief and note when saves overlap or the displayed source changes while saving.
